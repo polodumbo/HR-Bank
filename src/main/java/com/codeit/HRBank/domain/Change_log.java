@@ -1,5 +1,4 @@
 package com.codeit.HRBank.domain;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,5 +44,3 @@ public class Change_log {
     @JoinColumn(name = "employee_number")
     @ManyToOne(cascade = CascadeType.ALL)
     private Employee employee;  //employee_number
-
-}
