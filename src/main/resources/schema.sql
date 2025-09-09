@@ -1,0 +1,127 @@
+DROP TABLE IF EXISTS departments CASCADE;
+DROP TABLE IF EXISTS files CASCADE;
+DROP TABLE IF EXISTS employees CASCADE;
+DROP TABLE IF EXISTS change_logs CASCADE;
+DROP TABLE IF EXISTS change_log_diffs CASCADE;
+DROP TABLE IF EXISTS backups CASCADE;
+
+
+/* 부서 departments */
+CREATE TABLE departments
+(
+    id               BIGINT PRIMARY KEY,
+    name             VARCHAR(50) NOT NULL UNIQUE,
+    description      TEXT        NOT NULL,
+    established_date TIMESTAMP NOT NULL
+);
+COMMENT ON TABLE departments IS '부서';
+COMMENT ON COLUMN departments.id IS '아이디';
+COMMENT ON COLUMN departments.name IS '이름';
+COMMENT ON COLUMN departments.description IS '설명';
+COMMENT ON COLUMN departments.established_date IS '설립일';
+
+
+/* 파일 files */
+CREATE TABLE files
+(
+    id           BIGINT PRIMARY KEY,
+    file_name    VARCHAR(255) NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    size         BIGINT       NOT NULL
+);
+COMMENT ON TABLE files IS '파일';
+COMMENT ON COLUMN files.id IS '아이디';
+COMMENT ON COLUMN files.file_name IS '파일명';
+COMMENT ON COLUMN files.content_type IS '파일 형식';
+COMMENT ON COLUMN files.size IS '크기';
+
+
+/* 직원 employees */
+CREATE TABLE employees
+(
+    id               BIGINT PRIMARY KEY,
+    name             VARCHAR(50)  NOT NULL,
+    email            VARCHAR(100) NOT NULL UNIQUE,
+    employee_number  VARCHAR(50)  NOT NULL UNIQUE,
+    department_id    BIGINT       NOT NULL,
+    position         VARCHAR(50)  NOT NULL,
+    hire_date        TIMESTAMP  NOT NULL,
+    status           VARCHAR(10)  NOT NULL,
+    profile_image_id BIGINT
+
+);
+ALTER TABLE employees
+    ADD CONSTRAINT employees_departments_id_fk FOREIGN KEY (department_id) REFERENCES departments;
+ALTER TABLE employees
+    ADD CONSTRAINT employees_files_id_fk FOREIGN KEY (profile_image_id) REFERENCES files ON DELETE SET NULL;
+COMMENT ON TABLE employees IS '직원';
+COMMENT ON COLUMN employees.id IS '아이디';
+COMMENT ON COLUMN employees.name IS '이름';
+COMMENT ON COLUMN employees.email IS '이메일';
+COMMENT ON COLUMN employees.employee_number IS '사원 번호';
+COMMENT ON COLUMN employees.department_id IS '부서';
+COMMENT ON COLUMN employees.position IS '직함';
+COMMENT ON COLUMN employees.hire_date IS '입사일';
+COMMENT ON COLUMN employees.status IS '상태(재직중/휴직중/퇴사)'; -- ACTIVE, ON_LEAVE, RESIGNED
+COMMENT ON COLUMN employees.profile_image_id IS '프로필 이미지';
+
+
+/* 직원 정보 수정 이력 change_logs */
+CREATE TABLE change_logs
+(
+    id              BIGINT PRIMARY KEY,
+    type            VARCHAR(10) NOT NULL,
+    employee_number VARCHAR(50) NOT NULL,
+    memo            TEXT,
+    ip_address      VARCHAR(30) NOT NULL,
+    at              TIMESTAMP NOT NULL
+);
+ALTER TABLE change_logs
+    ADD CONSTRAINT change_logs_employees_emp_no_fk FOREIGN KEY (employee_number) REFERENCES employees (employee_number);
+COMMENT ON TABLE change_logs IS '직원 정보 수정 이력';
+COMMENT ON COLUMN change_logs.id IS '아이디';
+COMMENT ON COLUMN change_logs.type IS '유형(추가/수정/삭제)'; -- CREATED, UPDATED, DELETED
+COMMENT ON COLUMN change_logs.employee_number IS '대상 직원 사번';
+COMMENT ON COLUMN change_logs.memo IS '내용';
+COMMENT ON COLUMN change_logs.ip_address IS 'IP 주소';
+COMMENT ON COLUMN change_logs.at IS '시간';
+
+
+/* 직원 정보 수정 상세 이력 change_log_diffs */
+CREATE TABLE change_log_diffs
+(
+    id            BIGINT PRIMARY KEY,
+    log_id        BIGINT       NOT NULL,
+    property_name VARCHAR(50)  NOT NULL,
+    before        VARCHAR(100) NOT NULL,
+    after         VARCHAR(100) NOT NULL
+);
+ALTER TABLE change_log_diffs
+    ADD CONSTRAINT change_log_diffs_change_logs_id_fk FOREIGN KEY (log_id) REFERENCES change_logs;
+COMMENT ON TABLE change_log_diffs IS '직원 정보 수정 상세 이력';
+COMMENT ON COLUMN change_log_diffs.id IS '아이디';
+COMMENT ON COLUMN change_log_diffs.log_id IS '수정 이력 아이디';
+COMMENT ON COLUMN change_log_diffs.property_name IS '항목';
+COMMENT ON COLUMN change_log_diffs.before IS '이전 정보';
+COMMENT ON COLUMN change_log_diffs.after IS '이후 정보';
+
+
+/* 데이터 백업 backups */
+CREATE TABLE backups
+(
+    id         BIGINT PRIMARY KEY,
+    worker     VARCHAR(30) NOT NULL,
+    started_at TIMESTAMP NOT NULL,
+    ended_at   TIMESTAMP NOT NULL,
+    status     VARCHAR(10) NOT NULL,
+    file_id    BIGINT      NOT NULL
+);
+ALTER TABLE backups
+    ADD CONSTRAINT backups_files_id_fk FOREIGN KEY (file_id) REFERENCES files;
+COMMENT ON TABLE backups IS '데이터 백업';
+COMMENT ON COLUMN backups.id IS '아이디';
+COMMENT ON COLUMN backups.worker IS '작업자 IP';
+COMMENT ON COLUMN backups.started_at IS '시작 시간';
+COMMENT ON COLUMN backups.ended_at IS '종료 시간';
+COMMENT ON COLUMN backups.status IS '상태(진행중/완료/실패/건너뜀)'; -- IN_PROGRESS, COMPLETED, FAILED, SKIPPED
+COMMENT ON COLUMN backups.file_id IS '백업 파일';
