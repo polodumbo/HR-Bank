@@ -41,8 +41,6 @@ public class Change_log {
   @CreatedDate
   @Column(name = "at", updatable = false, nullable = false)
   private Instant at;
-
-
   @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(
       name = "employee_number",
