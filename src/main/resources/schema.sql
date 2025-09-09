@@ -1,4 +1,6 @@
 CREATE DATABASE hrbank ENCODING = 'UTF8';
+
+
 DROP TABLE IF EXISTS departments CASCADE;
 DROP TABLE IF EXISTS files CASCADE;
 DROP TABLE IF EXISTS employees CASCADE;
@@ -13,7 +15,7 @@ CREATE TABLE departments
     id               BIGINT PRIMARY KEY,
     name             VARCHAR(50) NOT NULL UNIQUE,
     description      TEXT        NOT NULL,
-    established_date TIMESTAMP   NOT NULL
+    established_date TIMESTAMPTZ NOT NULL
 );
 COMMENT ON TABLE departments IS '부서';
 COMMENT ON COLUMN departments.id IS '아이디';
@@ -46,8 +48,8 @@ CREATE TABLE employees
     employee_number  VARCHAR(50)  NOT NULL UNIQUE,
     department_id    BIGINT       NOT NULL,
     position         VARCHAR(50)  NOT NULL,
-    hire_date        TIMESTAMP    NOT NULL,
-    status           VARCHAR(10)  NOT NULL,
+    hire_date        TIMESTAMPTZ  NOT NULL,
+    status           VARCHAR(50)  NOT NULL,
     profile_image_id BIGINT
 
 );
@@ -74,8 +76,8 @@ CREATE TABLE change_logs
     type            VARCHAR(50) NOT NULL,
     employee_number VARCHAR(50) NOT NULL,
     memo            TEXT,
-    ip_address      VARCHAR(30) NOT NULL,
-    at              TIMESTAMP   NOT NULL
+    ip_address      VARCHAR(50) NOT NULL,
+    at              TIMESTAMPTZ NOT NULL
 );
 ALTER TABLE change_logs
     ADD CONSTRAINT change_logs_employees_emp_no_fk FOREIGN KEY (employee_number) REFERENCES employees (employee_number);
@@ -111,10 +113,10 @@ COMMENT ON COLUMN change_log_diffs.after IS '이후 정보';
 CREATE TABLE backups
 (
     id         BIGINT PRIMARY KEY,
-    worker     VARCHAR(30) NOT NULL,
-    started_at TIMESTAMP   NOT NULL,
-    ended_at   TIMESTAMP   NOT NULL,
-    status     VARCHAR(10) NOT NULL,
+    worker     VARCHAR(50) NOT NULL,
+    started_at TIMESTAMPTZ NOT NULL,
+    ended_at   TIMESTAMPTZ NOT NULL,
+    status     VARCHAR(50) NOT NULL,
     file_id    BIGINT      NOT NULL
 );
 ALTER TABLE backups

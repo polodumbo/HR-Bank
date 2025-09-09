@@ -1,5 +1,6 @@
 package com.codeit.HRBank.domain;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -57,8 +59,8 @@ public class Employee {
   @Column(nullable = false, length = 10)
   private EmploymentStatus status;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "profile_image_id",
-      foreignKey = @ForeignKey(name = "employees_files_id_fk"))
+      foreignKey = @ForeignKey(name = "employees_files_id_fk"), nullable = true)
   private File profileImage;
 }
