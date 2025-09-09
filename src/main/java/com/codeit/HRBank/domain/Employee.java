@@ -1,5 +1,7 @@
 package com.codeit.HRBank.domain;
 
+import jakarta.persistence.CascadeType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -57,7 +59,11 @@ public class Employee {
     @Column(nullable = false, length = 10)
     private EmploymentStatus status;
 
+
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
+
+    @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL, orphanRemoval = true, nullable = true)
+
     @JoinColumn(name = "profile_image_id",
         foreignKey = @ForeignKey(name = "employees_files_id_fk"))
     private File profileImage;
