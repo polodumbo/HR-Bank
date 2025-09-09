@@ -21,16 +21,17 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class File {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
 
-    @Column(name = "file_name", nullable = false, length = 255)
-    private String fileName;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "content_type", nullable = false, length = 100)
-    private String contentType;
+  @Column(name = "file_name", nullable = false, length = 255)
+  private String fileName;
 
-    @Column(nullable = false)
-    private Long size;
+  @Column(name = "content_type", nullable = false, length = 100)
+  private String contentType;
+
+  @Column(nullable = false)
+  private Long size;
 }

@@ -1,4 +1,5 @@
 package com.codeit.HRBank.domain;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,7 +20,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 
 @Entity
-@Table(name="change_Logs")
+@Table(name = "change_Logs")
 @Getter
 @Setter
 @Builder
@@ -27,20 +28,21 @@ import org.springframework.data.annotation.CreatedDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Change_log {
 
-    @Id //pk
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", updatable = false, nullable = false)
-    long id;
-    @Column(name = "type",  nullable = false, length = 50)
-    private String type;
-    @Column(name = "memo", nullable = false, length = 50)
-    private String memo;
-    @Column(name = "ip_address", nullable = false, length = 50)
-    private String ip_address;
-    @CreatedDate
-    @Column(name = "at", updatable = false, nullable = false)
-    private Instant at;
+  @Id //pk
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id", updatable = false, nullable = false)
+  long id;
+  @Column(name = "type", nullable = false, length = 50)
+  private String type;
+  @Column(name = "memo", nullable = true)
+  private String memo;
+  @Column(name = "ip_address", nullable = false, length = 50)
+  private String ip_address;
+  @CreatedDate
+  @Column(name = "at", updatable = false, nullable = false)
+  private Instant at;
 
-    @JoinColumn(name = "employee_number")
-    @ManyToOne(cascade = CascadeType.ALL)
-    private Employee employee;  //employee_number
+  @JoinColumn(name = "employee_number")
+  @ManyToOne(cascade = CascadeType.ALL)
+  private Employee employee;  //employee_number
+}
