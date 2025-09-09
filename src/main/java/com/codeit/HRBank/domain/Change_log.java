@@ -31,7 +31,7 @@ public class Change_log {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = false)
     long id;
-    @Column(name = "type",  nullable = false, length = 50)
+    @Column(name = "type", nullable = false, length = 50)
     private String type;
     @Column(name = "memo", nullable = false, length = 50)
     private String memo;
@@ -44,3 +44,4 @@ public class Change_log {
     @JoinColumn(name = "employee_number")
     @ManyToOne(cascade = CascadeType.ALL)
     private Employee employee;  //employee_number
+}
