@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -31,40 +32,35 @@ import lombok.Setter;
 @Builder
 public class Employee {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false, length = 50)
-    private String name;
+  @Column(nullable = false, length = 50)
+  private String name;
 
-    @Column(nullable = false, length = 100)
-    private String email;
+  @Column(nullable = false, length = 100, unique = true)
+  private String email;
 
-    @Column(name = "employee_number", nullable = false, unique = true, length = 50)
-    private String employeeNumber;
+  @Column(name = "employee_number", nullable = false, unique = true, length = 50)
+  private String employeeNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "department_id", nullable = false,
-        foreignKey = @ForeignKey(name = "employees_departments_id_fk"))
-    private Department department;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "department_id", nullable = false,
+      foreignKey = @ForeignKey(name = "employees_departments_id_fk"))
+  private Department department;
 
-    @Column(nullable = false, length = 50)
-    private String position;
+  @Column(nullable = false, length = 50)
+  private String position;
 
-    @Column(name = "hire_date", nullable = false)
-    private LocalDateTime hireDate;
+  @Column(name = "hire_date", nullable = false)
+  private LocalDateTime hireDate;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
-    private EmploymentStatus status;
-
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-
-    @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL, orphanRemoval = true, nullable = true)
-
-    @JoinColumn(name = "profile_image_id",
-        foreignKey = @ForeignKey(name = "employees_files_id_fk"))
-    private File profileImage;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 10)
+  private EmploymentStatus status;
+  @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "profile_image_id",
+      foreignKey = @ForeignKey(name = "employees_files_id_fk"), nullable = true)
+  private File profileImage;
 }
