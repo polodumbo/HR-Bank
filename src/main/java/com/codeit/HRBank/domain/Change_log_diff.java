@@ -26,21 +26,21 @@ import lombok.Setter;
 @Builder
 public class Change_log_diff {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "long_id", nullable = false,
-        foreignKey = @ForeignKey(name = "change_log_diffs_change_logs_id_fk"))
-    private Change_log log;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "log_id", nullable = false,
+      foreignKey = @ForeignKey(name = "change_log_diffs_change_logs_id_fk"))
+  private Change_log log;
 
-    @Column(name = "property_name", nullable = false, length = 50)
-    private String property_name;
+  @Column(name = "property_name", nullable = false, length = 50)
+  private String property_name;
 
-    @Column(name = "before", nullable = false, length = 100)
-    private String beforeValue;
+  @Column(name = "before", nullable = false, length = 100)
+  private String beforeValue;
 
-    @Column(name = "after", nullable = false, length = 100)
-    private String afterValue;
+  @Column(name = "after", nullable = false, length = 100)
+  private String afterValue;
 }

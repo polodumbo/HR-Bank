@@ -30,25 +30,25 @@ import lombok.Setter;
 @Builder
 public class Backup {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false, length = 30)
-    private String worker;
+  @Column(nullable = false, length = 50)
+  private String worker;
 
-    @Column(name = "started_at", nullable = false)
-    private LocalDateTime startedAt;
+  @Column(name = "started_at", nullable = false)
+  private LocalDateTime startedAt;
 
-    @Column(name = "ended_at", nullable = false)
-    private LocalDateTime endedAt;
+  @Column(name = "ended_at", nullable = false)
+  private LocalDateTime endedAt;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
-    private BackupStatus status;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 50)
+  private BackupStatus status;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "file_id", nullable = false,
-        foreignKey = @ForeignKey(name = "backups_files_id_fk"))
-    private File file;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "file_id", nullable = false,
+      foreignKey = @ForeignKey(name = "backups_files_id_fk"))
+  private File file;
 }

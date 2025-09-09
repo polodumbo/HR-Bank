@@ -3,6 +3,7 @@ package com.codeit.HRBank.domain;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,7 +20,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 
 @Entity
-@Table(name = "change_Logs")
+@Table(name = "change_logs")
 @Getter
 @Setter
 @Builder
@@ -41,7 +42,12 @@ public class Change_log {
   @Column(name = "at", updatable = false, nullable = false)
   private Instant at;
 
-  @JoinColumn(name = "employee_number")
+
   @ManyToOne(cascade = CascadeType.ALL)
+  @JoinColumn(
+      name = "employee_number",
+      referencedColumnName = "employee_number",
+      foreignKey = @ForeignKey(name = "change_logs_employees_emp_no_fk")
+  )
   private Employee employee;  //employee_number
 }
