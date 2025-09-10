@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/files")
-public class FileController implements FileApi {
+public class FileController {
 
   private final FileService fileService;
   private final FileStorage fileStorage;
