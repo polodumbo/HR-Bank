@@ -18,8 +18,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
 public class File {
 
   @Id
@@ -34,4 +32,10 @@ public class File {
 
   @Column(nullable = false)
   private Long size;
+
+  public File(String fileName, String contentType, Long size) {
+    this.fileName = fileName;
+    this.contentType = contentType;
+    this.size = size;
+  }
 }
