@@ -1,5 +1,6 @@
 package com.codeit.HRBank.controller;
 
+import com.codeit.HRBank.controller.api.FileApi;
 import com.codeit.HRBank.dto.data.FileDto;
 import com.codeit.HRBank.service.FileService;
 import com.codeit.HRBank.storage.FileStorage;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/files")
-public class FileController {
+public class FileController implements FileApi {
 
   private final FileService fileService;
   private final FileStorage fileStorage;
