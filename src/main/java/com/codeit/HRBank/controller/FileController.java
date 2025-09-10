@@ -1,6 +1,5 @@
 package com.codeit.HRBank.controller;
 
-import com.codeit.HRBank.controller.api.FileApi;
 import com.codeit.HRBank.dto.data.FileDto;
 import com.codeit.HRBank.service.FileService;
 import com.codeit.HRBank.storage.FileStorage;
