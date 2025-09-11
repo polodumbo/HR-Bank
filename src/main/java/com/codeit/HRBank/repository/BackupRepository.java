@@ -31,13 +31,13 @@ public interface BackupRepository extends JpaRepository<Backup, Long> {
 
 
     @Query("""
-        SELECT b FROM Backup b
-        WHERE (:idAfter IS NULL OR b.id > :idAfter)
-        AND (:worker IS NULL OR b.worker LIKE CONCAT('%', :worker, '%'))
-        AND b.startedAt >= COALESCE(:startedAtFrom, b.startedAt)
-        AND b.startedAt <= COALESCE(:startedAtTo, b.startedAt)
-        AND (:status IS NULL OR b.status = :status)
-    """)
+                SELECT b FROM Backup b
+                WHERE (:idAfter IS NULL OR b.id > :idAfter)
+                AND (:worker IS NULL OR b.worker LIKE CONCAT('%', :worker, '%'))
+                AND b.startedAt >= COALESCE(:startedAtFrom, b.startedAt)
+                AND b.startedAt <= COALESCE(:startedAtTo, b.startedAt)
+                AND (:status IS NULL OR b.status = :status)
+            """)
     Slice<Backup> findByCondition(
             @Param("worker") String worker,
             @Param("startedAtFrom") LocalDateTime startedAtFrom,
@@ -48,9 +48,15 @@ public interface BackupRepository extends JpaRepository<Backup, Long> {
     );
 
 
+    //    @Query("""
+//            SELECT b FROM Backup b
+//            WHERE b.status = COALESCE(:status, 'COMPLETED')
+//            ORDER BY b.startedAt DESC
+//            LIMIT 1
+//            """)
     @Query("""
             SELECT b FROM Backup b
-            WHERE b.status = COALESCE(:status, 'COMPLETED')
+            WHERE b.status = 'COMPLETED'
             ORDER BY b.startedAt DESC
             LIMIT 1
             """)

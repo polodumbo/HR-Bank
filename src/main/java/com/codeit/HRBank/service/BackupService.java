@@ -3,6 +3,7 @@ package com.codeit.HRBank.service;
 
 import com.codeit.HRBank.domain.Backup;
 import com.codeit.HRBank.domain.BackupStatus;
+import com.codeit.HRBank.domain.Change_log;
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.File;
 import com.codeit.HRBank.dto.data.BackupDto;
@@ -10,6 +11,7 @@ import com.codeit.HRBank.dto.request.BackupFindRequest;
 import com.codeit.HRBank.dto.response.CursorPageResponseBackupDto;
 import com.codeit.HRBank.mapper.BackupMapper;
 import com.codeit.HRBank.repository.BackupRepository;
+import com.codeit.HRBank.repository.ChangeLogRepository;
 import com.codeit.HRBank.repository.EmployeeRepository;
 import com.codeit.HRBank.repository.FileRepository;
 import com.codeit.HRBank.storage.FileStorage;
@@ -18,18 +20,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.swing.text.html.parser.Entity;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -44,10 +50,11 @@ public class BackupService {
     private final FileStorage fileStorage;
 
     private static final Logger log = LoggerFactory.getLogger(BackupService.class);
+    private final ChangeLogRepository changeLogRepository;
 
     @Transactional
     public BackupDto create(String worker_ip) {
-
+        log.info("1111111111");
         Backup backup = Backup.builder()
                 .worker(worker_ip)
                 .status(BackupStatus.IN_PROGRESS)
@@ -55,6 +62,9 @@ public class BackupService {
         backup = backupRepository.save(backup);
 
         try {
+            log.info("22222222222");
+
+
             List<Employee> employees = employeeRepository.findAll();
 
             if (employees.isEmpty()) {
@@ -62,8 +72,21 @@ public class BackupService {
                 backup.setStatus(BackupStatus.SKIPPED);
                 backup.setEndedAt(LocalDateTime.now());
                 backup = backupRepository.save(backup);
-                return backupMapper.toDto(backup);    //?
+                log.info("3333333333");
+                return backupMapper.toDto(backup);
+
             }
+
+            if(!checkBackupProcess()){
+                backup.setStatus(BackupStatus.SKIPPED);
+                backup.setEndedAt(LocalDateTime.now());
+                backup = backupRepository.save(backup);
+                backup = backupRepository.save(backup);
+                log.info("44444444");
+
+                return backupMapper.toDto(backup);
+            }else{
+                log.info("555555");
 
             // CSV 파일 생성 및 바이트 배열 추출
             byte[] csvBytes;
@@ -103,7 +126,7 @@ public class BackupService {
 //                        .contentType("text/csv")
 //                        .size((long) csvBytes.length)
 //                        .build();
-                File file = new File(fileName, "text/csv", (long)csvBytes.length);
+                File file = new File(fileName, "text/csv", (long) csvBytes.length);
                 file = fileRepository.save(file);
 
                 // 백업 이력 업데이트
@@ -123,7 +146,7 @@ public class BackupService {
                 backupRepository.save(backup);
                 return backupMapper.toDto(backup);
             }
-
+}
 
         } catch (Exception e) {
             log.error("자동 백업 작업 중 예상치 못한 오류가 발생했습니다.", e);
@@ -134,6 +157,7 @@ public class BackupService {
         }
 
         return backupMapper.toDto(backup);
+
     }
 
     @Transactional
@@ -145,9 +169,9 @@ public class BackupService {
 
         Long idAfter = request.idAfter();
         String cursor = request.cursor();
-        int size = (request.size()!=null &&  request.size()>0)?request.size():10;
-        String sortField = (request.sortField()!=null)? request.sortField() : "기본값";
-        String sortDirection = (request.sortDirection()!=null)? request.sortDirection() : "기본값";
+        int size = (request.size() != null && request.size() > 0) ? request.size() : 10;
+        String sortField = (request.sortField() != null) ? request.sortField() : "기본값";
+        String sortDirection = (request.sortDirection() != null) ? request.sortDirection() : "기본값";
 
         Sort.Direction direction = Sort.Direction.fromString(sortDirection);
         Sort sort = Sort.by(direction, sortField);
@@ -163,46 +187,47 @@ public class BackupService {
     }
 
     @Transactional
-    public BackupDto findLatest(BackupStatus status){
+    public BackupDto findLatest(BackupStatus status) {
         Backup backup = backupRepository.findLatest(status);
         return backupMapper.toDto(backup);
     }
 
-// 파일작업완료시 가능
-//    1시간마다 자동백업
+    //    1시간마다 자동백업
 //    @Scheduled(cron = "0 0 0/1 * * *")
-//    public void runBackupProcess() {
-//        log.info("자동 백업 배치 작업을 시작합니다.");
-//
-//        // Create a new BackupHistory entry
-//        Backup backup = new Backup();
-//        backup.setWorker("system");
-//        backup.setStartedAt(LocalDateTime.now());
-//        backup.setStatus(BackupStatus.IN_PROGRESS);
-////        backup.setFile("backup-" + LocalDateTime.now() + ".zip");
-//        backup.setEndedAt(null);
-//
-//        try {
-//            // Simulate backup process (e.g., calling a shell script or a service)
-//            // A simple sleep for demonstration purposes
-//            Thread.sleep(5000);
-//
-//            // Update status to COMPLETED and set end time
-//            backup.setEndedAt(LocalDateTime.now());
-//            backup.setStatus(BackupStatus.COMPLETED);
-//            log.info("자동 백업 작업이 완료되었습니다.");
-//
-//        } catch (Exception e) {
-//            // Update status to FAILED and set end time
-//            backup.setEndedAt(LocalDateTime.now());
-//            backup.setStatus(BackupStatus.FAILED);
-//            log.error("자동 백업 작업 중 오류가 발생했습니다.", e);
-//        } finally {
-//            // Save the backup history to the database regardless of success or failure
-//            backupRepository.save(backup);
-//            log.info("백업 이력이 데이터베이스에 저장되었습니다. 이력 ID: {}", backup.getId());
-//        }
-//    }
+    @Scheduled(fixedRate = 5000) //테스트용 5초마다 백업
+    public void runBackupProcess() {
+        log.info("자동 백업 배치 작업을 시작합니다.");
+        create("worker");
+    }
+
+    Boolean checkBackupProcess() {
+
+        // 1. 마지막으로 'COMPLETED'된 백업의 시작 시간을 가져옴
+        LocalDateTime lastBackupTime = null;
+        Backup lastCompletedBackup = backupRepository.findLatest(BackupStatus.COMPLETED);
+
+
+        if (lastCompletedBackup == null) {
+            return true;
+        }
+        lastBackupTime = lastCompletedBackup.getStartedAt();
+        log.info("마지막백업시간: {}", lastBackupTime);
+
+
+        // 2. 가장 최근 직원 정보 수정 시간 가져옴
+        Optional<Change_log> latestChangeLog = changeLogRepository.findFirstByOrderByAtDesc();
+
+        // 3. 마지막 백업 시간과 최근 변경 이력 시간 비교
+        if (latestChangeLog.isPresent()) {
+            LocalDateTime latestChangeTime = latestChangeLog.get().getAt();
+            log.info("마지막 로그 시간: {}", latestChangeTime);
+
+            if(latestChangeTime.isBefore(lastBackupTime)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 
 }
