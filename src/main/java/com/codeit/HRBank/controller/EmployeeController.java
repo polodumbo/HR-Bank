@@ -4,11 +4,14 @@ import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.dto.response.EmployeeResponse;
 import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
 import com.codeit.HRBank.service.EmployeeService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -31,5 +34,12 @@ public class EmployeeController {
         EmployeeResponse response = EmployeeResponse.from(newEmployee);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> deleteEmployee(@PathVariable("id") Long id, HttpServletRequest request) {
+        String ipAddress = request.getRemoteAddr();
+        employeeService.deleteEmployee(id, ipAddress);
+        return ResponseEntity.noContent().build();
     }
 }

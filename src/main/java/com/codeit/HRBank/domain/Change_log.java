@@ -32,15 +32,20 @@ public class Change_log {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", updatable = false, nullable = false)
   long id;
+
   @Column(name = "type", nullable = false, length = 50)
   private String type;
+
   @Column(name = "memo", nullable = true)
   private String memo;
+
   @Column(name = "ip_address", nullable = false, length = 50)
   private String ip_address;
+
   @CreatedDate
   @Column(name = "at", updatable = false, nullable = false)
   private Instant at;
+
   @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(
       name = "employee_number",
