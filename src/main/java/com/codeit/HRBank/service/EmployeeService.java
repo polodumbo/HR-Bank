@@ -1,5 +1,6 @@
 package com.codeit.HRBank.service;
 
+import com.codeit.HRBank.domain.Change_log;
 import com.codeit.HRBank.domain.Department;
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.File;
@@ -7,9 +8,12 @@ import com.codeit.HRBank.domain.EmploymentStatus;
 import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
 import com.codeit.HRBank.dto.request.FileCreateRequest;
 import com.codeit.HRBank.dto.data.FileDto;
+import com.codeit.HRBank.repository.ChangeLogRepository;
 import com.codeit.HRBank.repository.DepartmentRepository;
 import com.codeit.HRBank.repository.EmployeeRepository;
 import com.codeit.HRBank.repository.FileRepository;
+import jakarta.persistence.EntityNotFoundException;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +32,9 @@ public class EmployeeService {
     private final DepartmentRepository departmentRepository;
     private final FileService fileService;
     private final FileRepository fileRepository;
+    private final ChangeLogRepository changeLogRepository;
 
+    //직원 등록
     public Employee registerNewEmployee(EmployeeRegistrationRequest request, MultipartFile profileImage) {
         validateEmail(request.getEmail());
         Department department = findDepartmentById(request.getDepartmentId());
@@ -88,5 +94,27 @@ public class EmployeeService {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    //직원 삭제
+    public void deleteEmployee(Long id, String ipAddress) {
+        Employee employee = employeeRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
+
+        Change_log deletionLog = Change_log.builder()
+            .type("DELETED")
+            .employee(employee)
+            .memo("직원 정보 물리적 삭제")
+            .ip_address(ipAddress)
+            .at(Instant.now())
+            .build();
+
+        changeLogRepository.save(deletionLog);
+
+        if (employee.getProfileImage() != null) {
+            fileService.delete(employee.getProfileImage().getId());
+        }
+
+        employeeRepository.delete(employee);
     }
 }
