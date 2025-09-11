@@ -173,6 +173,8 @@ public class BackupService {
         String sortField = (request.sortField() != null) ? request.sortField() : "startedAt";
         String sortDirection = (request.sortDirection() != null) ? request.sortDirection() : "DESC";
 
+        log.info("sortField: {}", sortField);
+
         Sort.Direction direction = Sort.Direction.fromString(sortDirection);
         Sort sort = Sort.by(direction, sortField);
 
