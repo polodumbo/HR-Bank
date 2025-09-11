@@ -7,6 +7,7 @@ import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.File;
 import com.codeit.HRBank.dto.data.BackupDto;
 import com.codeit.HRBank.dto.request.BackupFindRequest;
+import com.codeit.HRBank.dto.response.CursorPageResponseBackupDto;
 import com.codeit.HRBank.mapper.BackupMapper;
 import com.codeit.HRBank.repository.BackupRepository;
 import com.codeit.HRBank.repository.EmployeeRepository;
@@ -21,9 +22,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.swing.text.html.parser.Entity;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -131,18 +137,29 @@ public class BackupService {
     }
 
     @Transactional
-    public List<BackupDto> findByCondition(BackupFindRequest request) {
+    public CursorPageResponseBackupDto findByCondition(BackupFindRequest request) {
         String worker = request.worker();
         LocalDateTime startedAtFrom = request.startedAtFrom();
         LocalDateTime startedAtTo = request.startedAtTo();
         BackupStatus status = request.status();
 
-        List<Backup> backupList = backupRepository.findByCondition(
-                worker, startedAtFrom, startedAtTo, status
+        Long idAfter = request.idAfter();
+        String cursor = request.cursor();
+        int size = (request.size()!=null &&  request.size()>0)?request.size():10;
+        String sortField = (request.sortField()!=null)? request.sortField() : "기본값";
+        String sortDirection = (request.sortDirection()!=null)? request.sortDirection() : "기본값";
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+        Sort sort = Sort.by(direction, sortField);
+
+        Pageable pageable = PageRequest.of(0, size, sort);
+
+        Slice<Backup> backupSlice = backupRepository.findByCondition(
+                worker, startedAtFrom, startedAtTo, status, idAfter, pageable
         );
-        return backupList.stream()
-                .map(backupMapper::toDto)
-                .collect(Collectors.toList());
+
+        return backupMapper.toDtoSlice(backupSlice);
+
     }
 
     @Transactional
