@@ -1,20 +1,28 @@
 package com.codeit.HRBank.service;
 
 import com.codeit.HRBank.domain.Change_log;
+import com.codeit.HRBank.domain.Change_log_diff;
 import com.codeit.HRBank.domain.Department;
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.File;
 import com.codeit.HRBank.domain.EmploymentStatus;
 import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
+import com.codeit.HRBank.dto.request.EmployeeUpdateRequest;
 import com.codeit.HRBank.dto.request.FileCreateRequest;
 import com.codeit.HRBank.dto.data.FileDto;
+import com.codeit.HRBank.dto.response.EmployeeResponse;
+import com.codeit.HRBank.exception.DuplicateEmailException;
+import com.codeit.HRBank.repository.ChangeLogDiffRepository;
 import com.codeit.HRBank.repository.ChangeLogRepository;
 import com.codeit.HRBank.repository.DepartmentRepository;
 import com.codeit.HRBank.repository.EmployeeRepository;
 import com.codeit.HRBank.repository.FileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.Instant;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.batch.core.configuration.DuplicateJobException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +41,7 @@ public class EmployeeService {
     private final FileService fileService;
     private final FileRepository fileRepository;
     private final ChangeLogRepository changeLogRepository;
+    private final ChangeLogDiffRepository changeLogDiffRepository;
 
     //직원 등록
     public Employee registerNewEmployee(EmployeeRegistrationRequest request, MultipartFile profileImage) {
@@ -116,5 +125,109 @@ public class EmployeeService {
         }
 
         employeeRepository.delete(employee);
+    }
+
+    //직원 정보 수정
+    public EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest updateRequest, String ipAddress) {
+        Employee employee = employeeRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
+
+        Employee originalEmployee = Employee.builder()
+            .id(employee.getId())
+            .name(employee.getName())
+            .email(employee.getEmail())
+            .employeeNumber(employee.getEmployeeNumber())
+            .department(employee.getDepartment())
+            .position(employee.getPosition())
+            .hireDate(employee.getHireDate())
+            .status(employee.getStatus())
+            .profileImage(employee.getProfileImage())
+            .build();
+
+        if (updateRequest.getEmail() != null && !updateRequest.getEmail().equals(employee.getEmail())) {
+            if (employeeRepository.existsByEmail(updateRequest.getEmail())) {
+                throw new DuplicateEmailException("이미 사용 중인 이메일입니다: " + updateRequest.getEmail());
+            }
+        }
+
+        if (updateRequest.getName() != null) {
+            employee.setName(updateRequest.getName());
+        }
+        if (updateRequest.getEmail() != null) {
+            employee.setEmail(updateRequest.getEmail());
+        }
+        if (updateRequest.getDepartmentId() != null) {
+            Department department = departmentRepository.findById(updateRequest.getDepartmentId())
+                .orElseThrow(() -> new EntityNotFoundException("부서를 찾을 수 없습니다. ID: " + updateRequest.getDepartmentId()));
+            employee.setDepartment(department);
+        }
+        if (updateRequest.getPosition() != null) {
+            employee.setPosition(updateRequest.getPosition());
+        }
+        if (updateRequest.getHireDate() != null) {
+            employee.setHireDate(updateRequest.getHireDate().atStartOfDay());
+        }
+        if (updateRequest.getProfileImageId() != null) {
+            File profileImage = fileRepository.findById(updateRequest.getProfileImageId())
+                .orElseThrow(()-> new EntityNotFoundException("프로필 이미지를 찾을 수 없습니다. ID: " + updateRequest.getProfileImageId()));
+
+            if (employee.getProfileImage() != null) {
+                fileService.delete(employee.getProfileImage().getId());
+            }
+            employee.setProfileImage(profileImage);
+
+        } else if (employee.getProfileImage() != null) {
+            fileService.delete(employee.getProfileImage().getId());
+            employee.setProfileImage(null);
+        }
+
+        Employee updatedEmployee = employeeRepository.save(employee);
+
+        //변경 이력 로깅
+        logChanges(originalEmployee, updatedEmployee, ipAddress, "직원 정보 수정");
+
+        return EmployeeResponse.from(updatedEmployee);
+    }
+
+    private void logChanges(Employee original, Employee updated, String ipAddress, String memo) {
+        Change_log changeLog = Change_log.builder()
+            .type("UPDATED")
+            .employee(updated) // 변경된 직원을 참조
+            .memo(memo)
+            .ip_address(ipAddress)
+            .at(Instant.now())
+            .build();
+        changeLogRepository.save(changeLog);
+
+        if (!Objects.equals(original.getName(), updated.getName())) {
+            changeLogDiffRepository.save(createChangeLogDiff(changeLog, "name", original.getName(), updated.getName()));
+        }
+        if (!Objects.equals(original.getEmail(), updated.getEmail())) {
+            changeLogDiffRepository.save(createChangeLogDiff(changeLog, "email", original.getEmail(), updated.getEmail()));
+        }
+        if (!Objects.equals(original.getDepartment(), updated.getDepartment())) {
+            changeLogDiffRepository.save(createChangeLogDiff(changeLog, "department",
+                original.getDepartment().getName(), updated.getDepartment().getName()));
+        }
+        if (!Objects.equals(original.getPosition(), updated.getPosition())) {
+            changeLogDiffRepository.save(createChangeLogDiff(changeLog, "position", original.getPosition(), updated.getPosition()));
+        }
+        if (!Objects.equals(original.getHireDate(), updated.getHireDate())) {
+            changeLogDiffRepository.save(createChangeLogDiff(changeLog, "hire_date", original.getHireDate().toString(), updated.getHireDate().toString()));
+        }
+        if (!Objects.equals(original.getProfileImage(), updated.getProfileImage())) {
+            String beforeImageId = (original.getProfileImage() != null) ? original.getProfileImage().getId().toString() : "null";
+            String afterImageId = (updated.getProfileImage() != null) ? updated.getProfileImage().getId().toString() : "null";
+            changeLogDiffRepository.save(createChangeLogDiff(changeLog, "profile_image", beforeImageId, afterImageId));
+        }
+    }
+
+    private Change_log_diff createChangeLogDiff(Change_log log, String propertyName, String beforeValue, String afterValue) {
+        return Change_log_diff.builder()
+            .log(log)
+            .property_name(propertyName)
+            .beforeValue(beforeValue)
+            .afterValue(afterValue)
+            .build();
     }
 }
