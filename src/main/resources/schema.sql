@@ -83,7 +83,11 @@ CREATE TABLE change_logs
         CHECK (type IN ('CREATED', 'UPDATED', 'DELETED'))
 );
 ALTER TABLE change_logs
-    ADD CONSTRAINT change_logs_employees_emp_no_fk FOREIGN KEY (employee_number) REFERENCES employees (employee_number);
+    --ADD CONSTRAINT change_logs_employees_emp_no_fk FOREIGN KEY (employee_number) REFERENCES employees (employee_number);
+    ADD CONSTRAINT change_logs_employees_emp_no_fk
+    FOREIGN KEY (employee_number)
+    REFERENCES employees (employee_number)
+    ON DELETE SET NULL;
 COMMENT ON TABLE change_logs IS '직원 정보 수정 이력';
 COMMENT ON COLUMN change_logs.id IS '아이디';
 COMMENT ON COLUMN change_logs.type IS '유형(추가/수정/삭제)'; -- CREATED, UPDATED, DELETED
