@@ -8,15 +8,24 @@ import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.File;
 import com.codeit.HRBank.domain.EmploymentStatus;
 import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
+import com.codeit.HRBank.dto.request.EmployeeUpdateRequest;
 import com.codeit.HRBank.dto.request.FileCreateRequest;
 import com.codeit.HRBank.dto.data.FileDto;
+import com.codeit.HRBank.dto.response.EmployeeDetailsResponse;
+import com.codeit.HRBank.dto.response.EmployeeResponse;
+import com.codeit.HRBank.exception.DuplicateEmailException;
+import com.codeit.HRBank.repository.ChangeLogDiffRepository;
 import com.codeit.HRBank.repository.ChangeLogRepository;
 import com.codeit.HRBank.repository.DepartmentRepository;
 import com.codeit.HRBank.repository.EmployeeRepository;
 import com.codeit.HRBank.repository.FileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.batch.core.configuration.DuplicateJobException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +39,7 @@ import java.util.NoSuchElementException;
 @Transactional
 public class EmployeeService {
 
+
   private final EmployeeRepository employeeRepository;
   private final DepartmentRepository departmentRepository;
   private final FileService fileService;
@@ -41,7 +51,10 @@ public class EmployeeService {
   public Employee registerNewEmployee(EmployeeRegistrationRequest request,
       MultipartFile profileImage) {
     validateEmail(request.getEmail());
-    Department department = findDepartmentById(request.getDepartmentId());
+    Department department = departmentRepository.findById(request.getDepartmentId())
+        .orElseThrow(
+            () -> new NoSuchElementException("부서 정보를 찾을 수 없습니다. ID: " + request.getDepartmentId()));
+
     String employeeNumber = generateEmployeeNumber();
     File profileFile = saveProfileImage(profileImage);
 
@@ -67,11 +80,6 @@ public class EmployeeService {
     });
   }
 
-  @Transactional(readOnly = true)
-  protected Department findDepartmentById(Long departmentId) {
-    return departmentRepository.findById(departmentId)
-        .orElseThrow(() -> new NoSuchElementException("부서 정보를 찾을 수 없습니다. ID: " + departmentId));
-  }
 
   private String generateEmployeeNumber() {
     String prefix = "EMP-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
@@ -106,15 +114,15 @@ public class EmployeeService {
     Employee employee = employeeRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
 
-//    Change_log deletionLog = Change_log.builder()
-//        .type("DELETED")
-//        .employee(employee)
-//        .memo("직원 정보 물리적 삭제")
-//        .ip_address(ipAddress)
-//        .at(Instant.now())
-//        .build();
+//        Change_log deletionLog = Change_log.builder()
+//            .type("DELETED")
+//            .employee(employee)
+//            .memo("직원 정보 물리적 삭제")
+//            .ip_address(ipAddress)
+//            .at(LocalDateTime.now())
+//            .build();
 //
-//    changeLogRepository.save(deletionLog);
+//        changeLogRepository.save(deletionLog);
 
     if (employee.getProfileImage() != null) {
       fileService.delete(employee.getProfileImage().getId());
@@ -122,4 +130,79 @@ public class EmployeeService {
 
     employeeRepository.delete(employee);
   }
+
+  //직원 정보 수정
+  public EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest updateRequest,
+      String ipAddress) {
+    Employee employee = employeeRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
+
+    Employee originalEmployee = Employee.builder()
+        .id(employee.getId())
+        .name(employee.getName())
+        .email(employee.getEmail())
+        .employeeNumber(employee.getEmployeeNumber())
+        .department(employee.getDepartment())
+        .position(employee.getPosition())
+        .hireDate(employee.getHireDate())
+        .status(employee.getStatus())
+        .profileImage(employee.getProfileImage())
+        .build();
+
+    if (updateRequest.getEmail() != null && !updateRequest.getEmail().equals(employee.getEmail())) {
+      if (employeeRepository.existsByEmail(updateRequest.getEmail())) {
+        throw new DuplicateEmailException("이미 사용 중인 이메일입니다: " + updateRequest.getEmail());
+      }
+    }
+
+    if (updateRequest.getName() != null) {
+      employee.setName(updateRequest.getName());
+    }
+    if (updateRequest.getEmail() != null) {
+      employee.setEmail(updateRequest.getEmail());
+    }
+    if (updateRequest.getDepartmentId() != null) {
+      Department department = departmentRepository.findById(updateRequest.getDepartmentId())
+          .orElseThrow(() -> new EntityNotFoundException(
+              "부서를 찾을 수 없습니다. ID: " + updateRequest.getDepartmentId()));
+      employee.setDepartment(department);
+    }
+    if (updateRequest.getPosition() != null) {
+      employee.setPosition(updateRequest.getPosition());
+    }
+    if (updateRequest.getHireDate() != null) {
+      employee.setHireDate(updateRequest.getHireDate().atStartOfDay());
+    }
+    if (updateRequest.getProfileImageId() != null) {
+      File profileImage = fileRepository.findById(updateRequest.getProfileImageId())
+          .orElseThrow(() -> new EntityNotFoundException(
+              "프로필 이미지를 찾을 수 없습니다. ID: " + updateRequest.getProfileImageId()));
+
+      if (employee.getProfileImage() != null) {
+        fileService.delete(employee.getProfileImage().getId());
+      }
+      employee.setProfileImage(profileImage);
+
+    } else if (employee.getProfileImage() != null) {
+      fileService.delete(employee.getProfileImage().getId());
+      employee.setProfileImage(null);
+    }
+
+    Employee updatedEmployee = employeeRepository.save(employee);
+
+//        //변경 이력 로깅
+//        logChanges(originalEmployee, updatedEmployee, ipAddress, "직원 정보 수정");
+
+    return EmployeeResponse.from(updatedEmployee);
+  }
+
+
+  //직원 상세 정보 조회
+  public EmployeeDetailsResponse getEmployeeDetailsById(Long id) {
+    Employee employee = employeeRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
+
+    return EmployeeDetailsResponse.from(employee);
+  }
+
 }
