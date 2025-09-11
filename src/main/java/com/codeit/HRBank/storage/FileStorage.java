@@ -10,8 +10,10 @@ public interface FileStorage {
 
   Long put(Long fileId, byte[] bytes);
 
-  InputStream get(Long binaryContentId);
+  InputStream get(Long fileId);
 
   ResponseEntity<Resource> download(FileDto metaData);
+
+  void delete(Long fileId);
 
 }
