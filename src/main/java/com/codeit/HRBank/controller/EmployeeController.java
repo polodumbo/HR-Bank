@@ -91,4 +91,18 @@ public class EmployeeController {
         return ResponseEntity.
                 status(HttpStatus.OK).body(response);
     }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> count(
+            @RequestParam(required = false) EmploymentStatus status,
+            @RequestParam(required = false) LocalDateTime fromDate,
+            @RequestParam(required = false) LocalDateTime toDate
+
+    ){
+        Long response = employeeService.countByCondition(status, fromDate, toDate);
+        return ResponseEntity.
+                status(HttpStatus.OK).body(response);
+    }
+
+
 }

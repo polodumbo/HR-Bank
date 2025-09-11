@@ -4,6 +4,7 @@ import com.codeit.HRBank.domain.Department;
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.EmploymentStatus;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -38,5 +39,16 @@ public interface EmployeeRepository extends JpaRepository<Employee,Long> {
             @Param("idAfter") Long idAfter,
             Pageable pageable
     );
+
+    @Query("""
+    SELECT COUNT(e) FROM Employee e
+    WHERE e.hireDate >= COALESCE(:fromDate, e.hireDate)
+    AND e.hireDate <= COALESCE(:toDate, e.hireDate)
+    AND e.status = :status
+""")
+    Long countByCondition(
+            @Param("status") EmploymentStatus status,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate);
 
 }

@@ -282,4 +282,8 @@ public class EmployeeService {
 
     }
 
+    public Long countByCondition(EmploymentStatus status, LocalDateTime fromDate, LocalDateTime toDate) {
+        return employeeRepository.countByCondition(status, fromDate, toDate);
+    }
+
 }
