@@ -10,6 +10,7 @@ import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
 import com.codeit.HRBank.dto.request.EmployeeUpdateRequest;
 import com.codeit.HRBank.dto.request.FileCreateRequest;
 import com.codeit.HRBank.dto.data.FileDto;
+import com.codeit.HRBank.dto.response.EmployeeDetailsResponse;
 import com.codeit.HRBank.dto.response.EmployeeResponse;
 import com.codeit.HRBank.exception.DuplicateEmailException;
 import com.codeit.HRBank.repository.ChangeLogDiffRepository;
@@ -19,6 +20,7 @@ import com.codeit.HRBank.repository.EmployeeRepository;
 import com.codeit.HRBank.repository.FileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -115,7 +117,7 @@ public class EmployeeService {
             .employee(employee)
             .memo("직원 정보 물리적 삭제")
             .ip_address(ipAddress)
-            .at(Instant.now())
+            .at(LocalDateTime.now())
             .build();
 
         changeLogRepository.save(deletionLog);
@@ -192,10 +194,10 @@ public class EmployeeService {
     private void logChanges(Employee original, Employee updated, String ipAddress, String memo) {
         Change_log changeLog = Change_log.builder()
             .type("UPDATED")
-            .employee(updated) // 변경된 직원을 참조
+            .employee(updated)
             .memo(memo)
             .ip_address(ipAddress)
-            .at(Instant.now())
+            .at(LocalDateTime.now())
             .build();
         changeLogRepository.save(changeLog);
 
@@ -230,4 +232,13 @@ public class EmployeeService {
             .afterValue(afterValue)
             .build();
     }
+
+    //직원 상세 정보 조회
+    public EmployeeDetailsResponse getEmployeeDetailsById(Long id) {
+        Employee employee = employeeRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
+
+        return EmployeeDetailsResponse.from(employee);
+    }
+
 }
