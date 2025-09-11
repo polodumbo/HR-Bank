@@ -1,6 +1,8 @@
 package com.codeit.HRBank.service;
 
+import com.codeit.HRBank.domain.ChangeLogType;
 import com.codeit.HRBank.domain.Change_log;
+import com.codeit.HRBank.domain.Change_log_diff;
 import com.codeit.HRBank.domain.Department;
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.File;
@@ -28,93 +30,96 @@ import java.util.NoSuchElementException;
 @Transactional
 public class EmployeeService {
 
-    private final EmployeeRepository employeeRepository;
-    private final DepartmentRepository departmentRepository;
-    private final FileService fileService;
-    private final FileRepository fileRepository;
-    private final ChangeLogRepository changeLogRepository;
+  private final EmployeeRepository employeeRepository;
+  private final DepartmentRepository departmentRepository;
+  private final FileService fileService;
+  private final FileRepository fileRepository;
+  private final ChangeLogService changeLogService;
 
-    //직원 등록
-    public Employee registerNewEmployee(EmployeeRegistrationRequest request, MultipartFile profileImage) {
-        validateEmail(request.getEmail());
-        Department department = findDepartmentById(request.getDepartmentId());
-        String employeeNumber = generateEmployeeNumber();
-        File profileFile = saveProfileImage(profileImage);
+  //직원 등록
+  @Transactional
+  public Employee registerNewEmployee(EmployeeRegistrationRequest request,
+      MultipartFile profileImage) {
+    validateEmail(request.getEmail());
+    Department department = findDepartmentById(request.getDepartmentId());
+    String employeeNumber = generateEmployeeNumber();
+    File profileFile = saveProfileImage(profileImage);
 
-        Employee newEmployee = Employee.builder()
-            .name(request.getName())
-            .email(request.getEmail())
-            .employeeNumber(employeeNumber)
-            .department(department)
-            .position(request.getPosition())
-            .hireDate(request.getHireDate().atStartOfDay())
-            .status(EmploymentStatus.ACTIVE)
-            .profileImage(profileFile)
-            .build();
+    Employee newEmployee = Employee.builder()
+        .name(request.getName())
+        .email(request.getEmail())
+        .employeeNumber(employeeNumber)
+        .department(department)
+        .position(request.getPosition())
+        .hireDate(request.getHireDate().atStartOfDay())
+        .status(EmploymentStatus.ACTIVE)
+        .profileImage(profileFile)
+        .build();
+    Employee savedEmployee = employeeRepository.save(newEmployee);
+    changeLogService.create(newEmployee);
+    return savedEmployee;
+  }
 
-        return employeeRepository.save(newEmployee);
+  @Transactional(readOnly = true)
+  protected void validateEmail(String email) {
+    employeeRepository.findByEmail(email).ifPresent(e -> {
+      throw new IllegalArgumentException("이미 등록된 이메일입니다: " + email);
+    });
+  }
+
+  @Transactional(readOnly = true)
+  protected Department findDepartmentById(Long departmentId) {
+    return departmentRepository.findById(departmentId)
+        .orElseThrow(() -> new NoSuchElementException("부서 정보를 찾을 수 없습니다. ID: " + departmentId));
+  }
+
+  private String generateEmployeeNumber() {
+    String prefix = "EMP-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+    Long count = employeeRepository.countByEmployeeNumberStartingWith(prefix);
+    return String.format("%s-%03d", prefix, count + 1);
+  }
+
+  private File saveProfileImage(MultipartFile profileImage) {
+    if (profileImage == null || profileImage.isEmpty()) {
+      return null;
     }
 
-    @Transactional(readOnly = true)
-    protected void validateEmail(String email) {
-        employeeRepository.findByEmail(email).ifPresent(e -> {
-            throw new IllegalArgumentException("이미 등록된 이메일입니다: " + email);
-        });
+    try {
+      FileCreateRequest fileCreateRequest = new FileCreateRequest(
+          profileImage.getOriginalFilename(),
+          profileImage.getContentType(),
+          profileImage.getBytes()
+      );
+
+      FileDto fileDto = fileService.create(fileCreateRequest);
+
+      return fileRepository.findById(fileDto.id())
+          .orElseThrow(() -> new NoSuchElementException("저장된 파일을 찾을 수 없습니다. ID: " + fileDto.id()));
+
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  //직원 삭제
+  public void deleteEmployee(Long id, String ipAddress) {
+    Employee employee = employeeRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
+
+//    Change_log deletionLog = Change_log.builder()
+//        .type("DELETED")
+//        .employee(employee)
+//        .memo("직원 정보 물리적 삭제")
+//        .ip_address(ipAddress)
+//        .at(Instant.now())
+//        .build();
+//
+//    changeLogRepository.save(deletionLog);
+
+    if (employee.getProfileImage() != null) {
+      fileService.delete(employee.getProfileImage().getId());
     }
 
-    @Transactional(readOnly = true)
-    protected Department findDepartmentById(Long departmentId) {
-        return departmentRepository.findById(departmentId)
-            .orElseThrow(() -> new NoSuchElementException("부서 정보를 찾을 수 없습니다. ID: " + departmentId));
-    }
-
-    private String generateEmployeeNumber() {
-        String prefix = "EMP-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        Long count = employeeRepository.countByEmployeeNumberStartingWith(prefix);
-        return String.format("%s-%03d", prefix, count + 1);
-    }
-
-    private File saveProfileImage(MultipartFile profileImage) {
-        if (profileImage == null || profileImage.isEmpty()) {
-            return null;
-        }
-
-        try {
-            FileCreateRequest fileCreateRequest = new FileCreateRequest(
-                profileImage.getOriginalFilename(),
-                profileImage.getContentType(),
-                profileImage.getBytes()
-            );
-
-            FileDto fileDto = fileService.create(fileCreateRequest);
-
-            return fileRepository.findById(fileDto.id())
-                .orElseThrow(() -> new NoSuchElementException("저장된 파일을 찾을 수 없습니다. ID: " + fileDto.id()));
-
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    //직원 삭제
-    public void deleteEmployee(Long id, String ipAddress) {
-        Employee employee = employeeRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
-
-        Change_log deletionLog = Change_log.builder()
-            .type("DELETED")
-            .employee(employee)
-            .memo("직원 정보 물리적 삭제")
-            .ip_address(ipAddress)
-            .at(Instant.now())
-            .build();
-
-        changeLogRepository.save(deletionLog);
-
-        if (employee.getProfileImage() != null) {
-            fileService.delete(employee.getProfileImage().getId());
-        }
-
-        employeeRepository.delete(employee);
-    }
+    employeeRepository.delete(employee);
+  }
 }

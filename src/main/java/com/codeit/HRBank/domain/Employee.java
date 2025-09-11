@@ -57,9 +57,10 @@ public class Employee {
   private LocalDateTime hireDate;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 10)
+  @Column(nullable = false, length = 50)
   private EmploymentStatus status;
-  @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL, orphanRemoval = true)
+
+  @OneToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.REMOVE)
   @JoinColumn(name = "profile_image_id",
       foreignKey = @ForeignKey(name = "employees_files_id_fk"), nullable = true)
   private File profileImage;

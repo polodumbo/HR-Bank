@@ -38,9 +38,9 @@ public class Change_log_diff {
   @Column(name = "property_name", nullable = false, length = 50)
   private String propertyName;
 
-  @Column(name = "before", nullable = false, length = 100)
+  @Column(name = "before", length = 100)
   private String beforeValue;
 
-  @Column(name = "after", nullable = false, length = 100)
+  @Column(name = "after", length = 100)
   private String afterValue;
 }
