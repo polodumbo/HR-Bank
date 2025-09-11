@@ -170,8 +170,8 @@ public class BackupService {
         Long idAfter = request.idAfter();
         String cursor = request.cursor();
         int size = (request.size() != null && request.size() > 0) ? request.size() : 10;
-        String sortField = (request.sortField() != null) ? request.sortField() : "기본값";
-        String sortDirection = (request.sortDirection() != null) ? request.sortDirection() : "기본값";
+        String sortField = (request.sortField() != null) ? request.sortField() : "startedAt";
+        String sortDirection = (request.sortDirection() != null) ? request.sortDirection() : "DESC";
 
         Sort.Direction direction = Sort.Direction.fromString(sortDirection);
         Sort sort = Sort.by(direction, sortField);
@@ -193,8 +193,8 @@ public class BackupService {
     }
 
     //    1시간마다 자동백업
-//    @Scheduled(cron = "0 0 0/1 * * *")
-    @Scheduled(fixedRate = 5000) //테스트용 5초마다 백업
+    @Scheduled(cron = "0 0 0/1 * * *")
+//    @Scheduled(fixedRate = 5000) //테스트용 5초마다 백업
     public void runBackupProcess() {
         log.info("자동 백업 배치 작업을 시작합니다.");
         create("worker");
