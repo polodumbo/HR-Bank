@@ -1,6 +1,7 @@
 package com.codeit.HRBank.controller;
 
 import com.codeit.HRBank.domain.Employee;
+import com.codeit.HRBank.dto.request.EmployeeUpdateRequest;
 import com.codeit.HRBank.dto.response.EmployeeResponse;
 import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
 import com.codeit.HRBank.service.EmployeeService;
@@ -11,8 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,5 +44,16 @@ public class EmployeeController {
         String ipAddress = request.getRemoteAddr();
         employeeService.deleteEmployee(id, ipAddress);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<EmployeeResponse> updateEmployee(
+        @PathVariable Long id,
+        @RequestBody EmployeeUpdateRequest updateRequest,
+        HttpServletRequest request
+    ) {
+        String ipAddress = request.getRemoteAddr();
+        EmployeeResponse updatedEmployee  = employeeService.updateEmployee(id, updateRequest, ipAddress);
+        return ResponseEntity.ok(updatedEmployee);
     }
 }

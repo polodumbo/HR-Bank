@@ -32,4 +32,12 @@ public class GlobalExceptionHandler {
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(e.getMessage());
   }
+
+  @ExceptionHandler(DuplicateEmailException.class)
+  public ResponseEntity<String> handleDuplicateEmailException(DuplicateEmailException e) {
+      e.printStackTrace();
+      return ResponseEntity
+          .status(HttpStatus.CONFLICT)
+          .body(e.getMessage());
+  }
 }
