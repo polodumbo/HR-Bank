@@ -52,16 +52,16 @@ public class DepartmentController {
         .body(departments);
   }
 
-  @Operation(summary = "부서 목록 조회")
-  @GetMapping
-  public ResponseEntity<PageResponse<DepartmentDto>> searchDepartments(
-      @RequestParam(required = false) String nameOrDescription,
-      @RequestParam(required = false) Long idAfter,        // 이전 페이지의 마지막 ID
-      @RequestParam(required = false) String cursor,       // 커서(선택)
-      @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
-      @RequestParam(defaultValue = "establishedDate") String sortField,
-      @RequestParam(defaultValue = "asc") String sortDirection
-  )
+//  @Operation(summary = "부서 목록 조회")
+//  @GetMapping
+//  public ResponseEntity<PageResponse<DepartmentDto>> searchDepartments(
+//      @RequestParam(required = false) String nameOrDescription,
+//      @RequestParam(required = false) Long idAfter,        // 이전 페이지의 마지막 ID
+//      @RequestParam(required = false) String cursor,       // 커서(선택)
+//      @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+//      @RequestParam(defaultValue = "establishedDate") String sortField,
+//      @RequestParam(defaultValue = "asc") String sortDirection
+//  )
 
 
 }

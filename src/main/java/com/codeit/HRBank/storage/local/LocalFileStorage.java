@@ -88,5 +88,19 @@ public class LocalFileStorage implements FileStorage {
         .body(resource);
   }
 
+  @Override
+  public void delete(Long fileId) {
+    Path filePath = resolvePath(fileId);
+    if (Files.notExists(filePath)) {
+      throw new NoSuchElementException("File" + fileId + "not found");
+    }
+    try {
+      Files.delete(filePath);          // 실제 파일 삭제
+    } catch (IOException e) {
+      throw new RuntimeException("파일 삭제 실패: " + fileId, e);
+    }
+
+  }
+
 
 }

@@ -49,5 +49,6 @@ public class FileService {
       throw new NoSuchElementException("File with id" + fileId + " not found");
     }
     FileRepository.deleteById(fileId);
+    FileStorage.delete(fileId);
   }
 }
