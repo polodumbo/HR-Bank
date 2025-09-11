@@ -5,6 +5,7 @@ import com.codeit.HRBank.domain.File;
 import com.codeit.HRBank.dto.data.BackupDto;
 import com.codeit.HRBank.dto.data.FileDto;
 import com.codeit.HRBank.dto.request.BackupFindRequest;
+import com.codeit.HRBank.dto.response.CursorPageResponseBackupDto;
 import com.codeit.HRBank.repository.FileRepository;
 import com.codeit.HRBank.service.BackupService;
 import com.codeit.HRBank.storage.FileStorage;
@@ -54,12 +55,12 @@ public class BackupController {
     - 조회 조건이 여러 개인 경우 모든 조건을 만족한 결과로 조회합니다.*/
     //페이지네이션 (정렬조건)
     @GetMapping
-    public ResponseEntity<List<BackupDto>> findByConfidence(
+    public ResponseEntity<CursorPageResponseBackupDto> findByConfidence(
             @RequestBody BackupFindRequest request
     ){
-        List<BackupDto> backups = backupService.findByCondition(request);
+        CursorPageResponseBackupDto response = backupService.findByCondition(request);
         return ResponseEntity.
-        status(HttpStatus.OK).body(backups);
+        status(HttpStatus.OK).body(response);
     }
 
     //지정된 상태의 가장 최근 백업 정보를 조회합니다.

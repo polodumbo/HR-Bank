@@ -7,7 +7,12 @@ public record BackupFindRequest(
         String worker,
         BackupStatus status,
         LocalDateTime startedAtFrom,
-        LocalDateTime startedAtTo
+        LocalDateTime startedAtTo,
+        Long idAfter,
+        String cursor,
+        Integer size,
+        String sortField,
+        String sortDirection
 ) {
 
 }
