@@ -21,7 +21,7 @@ public class FileController {
   @GetMapping("/{id}/download")
   public ResponseEntity<?> download(@PathVariable("id") Long fileId) {
     FileDto fileDto = fileService.find(fileId);
-    return fileStorage.download(fileDto);
+    return fileStorage.download(fileDto, "/profile");
   }
 
 }

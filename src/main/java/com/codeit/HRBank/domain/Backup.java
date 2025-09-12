@@ -47,11 +47,11 @@ public class Backup {
 
     @CreatedDate
     @Column(name = "started_at", columnDefinition = "timestamp with time zone", updatable = false, nullable = false)
-    private LocalDate startedAt;
+    private LocalDateTime startedAt;
 
 //    @LastModifiedDate
     @Column(columnDefinition = "timestamp with time zone", name = "ended_at")
-    private LocalDate endedAt;
+    private LocalDateTime endedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)

@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 public record BackupDto(
         Long id,
         String worker,
-        LocalDate startedAt,
-        LocalDate endedAt,
+        LocalDateTime startedAt,
+        LocalDateTime endedAt,
         BackupStatus status
         , Long fileId
 ) {
