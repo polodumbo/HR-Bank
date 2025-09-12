@@ -51,9 +51,10 @@ public class EmployeeService {
   public Employee registerNewEmployee(EmployeeRegistrationRequest request,
       MultipartFile profileImage) {
     validateEmail(request.getEmail());
-    Department department = departmentRepository.findById(request.getDepartmentId())
+    Department department = departmentRepository.findByName(request.getDepartmentName())
         .orElseThrow(
-            () -> new NoSuchElementException("부서 정보를 찾을 수 없습니다. ID: " + request.getDepartmentId()));
+            () -> new NoSuchElementException(
+                "부서 정보를 찾을 수 없습니다. ID: " + request.getDepartmentName()));
 
     String employeeNumber = generateEmployeeNumber();
     File profileFile = saveProfileImage(profileImage);
@@ -64,7 +65,7 @@ public class EmployeeService {
         .employeeNumber(employeeNumber)
         .department(department)
         .position(request.getPosition())
-        .hireDate(request.getHireDate().atStartOfDay())
+        .hireDate(request.getHireDate())
         .status(EmploymentStatus.ACTIVE)
         .profileImage(profileFile)
         .build();
@@ -110,24 +111,15 @@ public class EmployeeService {
   }
 
   //직원 삭제
+  @Transactional
   public void deleteEmployee(Long id, String ipAddress) {
     Employee employee = employeeRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
-
-//        Change_log deletionLog = Change_log.builder()
-//            .type("DELETED")
-//            .employee(employee)
-//            .memo("직원 정보 물리적 삭제")
-//            .ip_address(ipAddress)
-//            .at(LocalDateTime.now())
-//            .build();
-//
-//        changeLogRepository.save(deletionLog);
+    changeLogService.delete(employee, ipAddress);
 
     if (employee.getProfileImage() != null) {
       fileService.delete(employee.getProfileImage().getId());
     }
-
     employeeRepository.delete(employee);
   }
 
@@ -161,17 +153,20 @@ public class EmployeeService {
     if (updateRequest.getEmail() != null) {
       employee.setEmail(updateRequest.getEmail());
     }
-    if (updateRequest.getDepartmentId() != null) {
-      Department department = departmentRepository.findById(updateRequest.getDepartmentId())
-          .orElseThrow(() -> new EntityNotFoundException(
-              "부서를 찾을 수 없습니다. ID: " + updateRequest.getDepartmentId()));
+    if (updateRequest.getDepartmentName() != null) {
+      Department department = departmentRepository.findByName(updateRequest.getDepartmentName())
+          .orElseThrow(() -> new NoSuchElementException(
+              "부서를 찾을 수 없습니다. ID: " + updateRequest.getDepartmentName()));
       employee.setDepartment(department);
     }
     if (updateRequest.getPosition() != null) {
       employee.setPosition(updateRequest.getPosition());
     }
+    if (updateRequest.getStatus() != null) {
+      employee.setStatus(updateRequest.getStatus());
+    }
     if (updateRequest.getHireDate() != null) {
-      employee.setHireDate(updateRequest.getHireDate().atStartOfDay());
+      employee.setHireDate(updateRequest.getHireDate());
     }
     if (updateRequest.getProfileImageId() != null) {
       File profileImage = fileRepository.findById(updateRequest.getProfileImageId())
@@ -190,8 +185,7 @@ public class EmployeeService {
 
     Employee updatedEmployee = employeeRepository.save(employee);
 
-//        //변경 이력 로깅
-//        logChanges(originalEmployee, updatedEmployee, ipAddress, "직원 정보 수정");
+    changeLogService.update(originalEmployee, updatedEmployee, ipAddress);
 
     return EmployeeResponse.from(updatedEmployee);
   }

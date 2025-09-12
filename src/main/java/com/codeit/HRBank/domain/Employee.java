@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -54,7 +55,7 @@ public class Employee {
   private String position;
 
   @Column(name = "hire_date", nullable = false)
-  private LocalDateTime hireDate;
+  private LocalDate hireDate;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 50)

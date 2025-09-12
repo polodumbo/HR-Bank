@@ -39,7 +39,7 @@ public class Change_log {
   private String memo;
 
   @Column(name = "ip_address", nullable = false, length = 50)
-  private String ip_address;
+  private String ipAddress;
 
   @CreatedDate
   @Column(name = "at", updatable = false, nullable = false)

@@ -1,4 +1,4 @@
-CREATE DATABASE hrbank ENCODING = 'UTF8';
+-- CREATE DATABASE hrbank ENCODING = 'UTF8';
 
 DROP TABLE IF EXISTS departments CASCADE;
 DROP TABLE IF EXISTS files CASCADE;
@@ -47,7 +47,7 @@ CREATE TABLE employees
     employee_number  VARCHAR(50)  NOT NULL UNIQUE,
     department_id    BIGINT       NOT NULL,
     position         VARCHAR(50)  NOT NULL,
-    hire_date        TIMESTAMPTZ  NOT NULL,
+    hire_date        DATE         NOT NULL,
     status           VARCHAR(50)  NOT NULL,
     profile_image_id BIGINT,
     CONSTRAINT chk_employees_status

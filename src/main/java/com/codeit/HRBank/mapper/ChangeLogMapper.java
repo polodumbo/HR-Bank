@@ -16,7 +16,7 @@ public class ChangeLogMapper {
         changeLog.getType().name(),
         changeLog.getEmployeeNumber(),
         changeLog.getMemo(),
-        changeLog.getIp_address(),
+        changeLog.getIpAddress() == null ? null : changeLog.getIpAddress().toString(),
         changeLog.getAt().toString()
     );
   }
