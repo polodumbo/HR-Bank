@@ -99,4 +99,8 @@ public class ChangeLogService {
         .toList();
   }
 
+  public long getChangeLogCount(LocalDate fromDate, LocalDate toDate) {
+    return changeLogRepository.countByDate(fromDate, toDate);
+  }
+
 }

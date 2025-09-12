@@ -41,11 +41,13 @@ public class ChangeLogController {
   ) {
     // 기본값 설정: fromDate = 7일 전, toDate = 현재
     if (fromDate == null) {
-      fromDate = LocalDateTime.now().minusDays(7);
+      fromDate = LocalDate.now().minusDays(7);
     }
     if (toDate == null) {
-      toDate = LocalDateTime.now();
+      toDate = LocalDate.now();
     }
+    long count = changeLogService.getChangeLogCount(fromDate, toDate);
+    return ResponseEntity.ok(count);
   }
 
 }

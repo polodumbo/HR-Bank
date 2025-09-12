@@ -1,8 +1,5 @@
 package com.codeit.HRBank.service;
 
-import com.codeit.HRBank.domain.ChangeLogType;
-import com.codeit.HRBank.domain.Change_log;
-import com.codeit.HRBank.domain.Change_log_diff;
 import com.codeit.HRBank.domain.Department;
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.File;
@@ -12,34 +9,25 @@ import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
 import com.codeit.HRBank.dto.request.EmployeeUpdateRequest;
 import com.codeit.HRBank.dto.request.FileCreateRequest;
 import com.codeit.HRBank.dto.data.FileDto;
-import com.codeit.HRBank.dto.response.CursorPageResponseDepartmentDto;
 import com.codeit.HRBank.dto.response.CursorPageResponseEmployeeDto;
 import com.codeit.HRBank.dto.response.EmployeeDetailsResponse;
 import com.codeit.HRBank.dto.response.EmployeeResponse;
 import com.codeit.HRBank.exception.DuplicateEmailException;
 import com.codeit.HRBank.mapper.EmployeeMapper;
-import com.codeit.HRBank.repository.ChangeLogDiffRepository;
-import com.codeit.HRBank.repository.ChangeLogRepository;
 import com.codeit.HRBank.repository.DepartmentRepository;
 import com.codeit.HRBank.repository.EmployeeRepository;
 import com.codeit.HRBank.repository.FileRepository;
 import jakarta.persistence.EntityNotFoundException;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.batch.core.configuration.DuplicateJobException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -216,8 +204,8 @@ public class EmployeeService {
       String employeeNumber,
       String departmentName,
       String position,
-          LocalDate hireDateFrom,
-          LocalDate hireDateTo,
+      LocalDate hireDateFrom,
+      LocalDate hireDateTo,
       EmploymentStatus status,
       Long idAfter,        // 이전 페이지의 마지막 ID
       String cursor,       // 커서(선택)
@@ -245,55 +233,55 @@ public class EmployeeService {
   }
 
   public Long countByCondition(EmploymentStatus status, LocalDate fromDate,
-          LocalDate toDate) {
+      LocalDate toDate) {
     return employeeRepository.countByCondition(status, fromDate, toDate);
   }
 
-    public List<EmployeeTrendDto> getTrend(LocalDate from, LocalDate to, String unit) {
-        to = (to != null) ? to : LocalDate.now();
+  public List<EmployeeTrendDto> getTrend(LocalDate from, LocalDate to, String unit) {
+    to = (to != null) ? to : LocalDate.now();
 
-        try {
-            ChronoUnit chronoUnit = ChronoUnit.valueOf(unit.toUpperCase());
-            from = (from != null) ? from : LocalDate.now().minus(12,chronoUnit);
-            // ...chronoUnit을 사용하는 코드...
-        } catch (IllegalArgumentException e) {
-            // 유효하지 않은 unit이 들어왔을 때의 처리
-            System.err.println("잘못된 시간 단위: " + unit);
-            // 예외를 다시 던지거나 기본값을 설정할 수 있습니다.
-        }
-
-        List<Object[]> queryResult = employeeRepository.getTrend(from, to, unit);
-        List<EmployeeTrendDto> trendList = new ArrayList<>();
-        Long previousCount = null;
-
-        for (Object[] result : queryResult) {
-            LocalDate date = LocalDate.parse((String) result[0]);
-            Long currentCount = ((Number) result[1]).longValue();
-
-            Long change = 0L;
-            Double changeRate = 0.0;
-
-            if (previousCount != null) {
-                change = currentCount - previousCount;
-                if (previousCount > 0) {
-                    changeRate = (double) change / previousCount * 100.0;
-                }
-            }
-
-            trendList.add(
-                    new EmployeeTrendDto(
-                            date,
-                            currentCount,
-                            change,
-                            changeRate
-                    )
-            );
-
-            previousCount = currentCount;
-        }
-
-        return trendList;
-
+    try {
+      ChronoUnit chronoUnit = ChronoUnit.valueOf(unit.toUpperCase());
+      from = (from != null) ? from : LocalDate.now().minus(12, chronoUnit);
+      // ...chronoUnit을 사용하는 코드...
+    } catch (IllegalArgumentException e) {
+      // 유효하지 않은 unit이 들어왔을 때의 처리
+      System.err.println("잘못된 시간 단위: " + unit);
+      // 예외를 다시 던지거나 기본값을 설정할 수 있습니다.
     }
+
+    List<Object[]> queryResult = employeeRepository.getTrend(from, to, unit);
+    List<EmployeeTrendDto> trendList = new ArrayList<>();
+    Long previousCount = null;
+
+    for (Object[] result : queryResult) {
+      LocalDate date = LocalDate.parse((String) result[0]);
+      Long currentCount = ((Number) result[1]).longValue();
+
+      Long change = 0L;
+      Double changeRate = 0.0;
+
+      if (previousCount != null) {
+        change = currentCount - previousCount;
+        if (previousCount > 0) {
+          changeRate = (double) change / previousCount * 100.0;
+        }
+      }
+
+      trendList.add(
+          new EmployeeTrendDto(
+              date,
+              currentCount,
+              change,
+              changeRate
+          )
+      );
+
+      previousCount = currentCount;
+    }
+
+    return trendList;
+
+  }
 
 }
