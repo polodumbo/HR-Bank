@@ -78,7 +78,7 @@ CREATE TABLE change_logs
     employee_number VARCHAR(50) NOT NULL,
     memo            TEXT,
     ip_address      VARCHAR(50) NOT NULL,
-    at              DATE NOT NULL,
+    at              timestamptz NOT NULL,
     CONSTRAINT chk_change_logs_type
         CHECK (type IN ('CREATED', 'UPDATED', 'DELETED'))
 );

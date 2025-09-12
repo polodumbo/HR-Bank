@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,7 +47,7 @@ public class Change_log {
 
   @CreatedDate
   @Column(name = "at", updatable = false, nullable = false)
-  private LocalDate at;
+  private LocalDateTime at;
 
   @Column(name = "employee_number", length = 50, nullable = false)
   private String employeeNumber;
