@@ -3,8 +3,12 @@ package com.codeit.HRBank.controller;
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.EmploymentStatus;
 import com.codeit.HRBank.dto.request.EmployeeUpdateRequest;
+<<<<<<< HEAD
+import com.codeit.HRBank.dto.request.FileCreateRequest;
+=======
 import com.codeit.HRBank.dto.response.CursorPageResponseDepartmentDto;
 import com.codeit.HRBank.dto.response.CursorPageResponseEmployeeDto;
+>>>>>>> main
 import com.codeit.HRBank.dto.response.EmployeeDetailsResponse;
 import com.codeit.HRBank.dto.response.EmployeeResponse;
 import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
@@ -12,7 +16,11 @@ import com.codeit.HRBank.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+<<<<<<< HEAD
+import java.util.Optional;
+=======
 import java.time.LocalDateTime;
+>>>>>>> main
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,26 +42,44 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class EmployeeController {
 
-    private final EmployeeService employeeService;
+  private final EmployeeService employeeService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<EmployeeResponse> registerEmployee(
-        @RequestPart("employee") @Valid EmployeeRegistrationRequest request,
-        @RequestPart(value = "profile", required = false) MultipartFile profileImage) {
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<EmployeeResponse> registerEmployee(
+      @RequestPart("employee") @Valid EmployeeRegistrationRequest request,
+      @RequestPart(value = "profile", required = false) MultipartFile profileImage) {
+    Employee newEmployee = employeeService.registerNewEmployee(request, profileImage);
+    EmployeeResponse response = EmployeeResponse.from(newEmployee);
 
-        Employee newEmployee = employeeService.registerNewEmployee(request, profileImage);
-        EmployeeResponse response = EmployeeResponse.from(newEmployee);
+    return new ResponseEntity<>(response, HttpStatus.CREATED);
+  }
 
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+  @DeleteMapping("{id}")
+  public ResponseEntity<Void> deleteEmployee(@PathVariable("id") Long id,
+      HttpServletRequest request) {
+    String ipAddress = request.getRemoteAddr();
+    employeeService.deleteEmployee(id, ipAddress);
+    return ResponseEntity.noContent().build();
+  }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable("id") Long id, HttpServletRequest request) {
-        String ipAddress = request.getRemoteAddr();
-        employeeService.deleteEmployee(id, ipAddress);
-        return ResponseEntity.noContent().build();
-    }
+  @PatchMapping("/{id}")
+  public ResponseEntity<EmployeeResponse> updateEmployee(
+      @PathVariable Long id,
+      @RequestBody EmployeeUpdateRequest updateRequest,
+      HttpServletRequest request
+  ) {
+    String ipAddress = request.getRemoteAddr();
+    EmployeeResponse updatedEmployee = employeeService.updateEmployee(id, updateRequest, ipAddress);
+    return ResponseEntity.ok(updatedEmployee);
+  }
 
+<<<<<<< HEAD
+  @GetMapping("/{id}")
+  public ResponseEntity<EmployeeDetailsResponse> getEmployeeDetails(@PathVariable Long id) {
+    EmployeeDetailsResponse response = employeeService.getEmployeeDetailsById(id);
+    return ResponseEntity.ok(response);
+  }
+=======
     @PatchMapping("/{id}")
     public ResponseEntity<EmployeeResponse> updateEmployee(
         @PathVariable Long id,
@@ -105,4 +131,5 @@ public class EmployeeController {
     }
 
 
+>>>>>>> main
 }
