@@ -38,6 +38,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RequiredArgsConstructor
 @Service
@@ -65,7 +66,6 @@ public class BackupService {
         try {
             log.info("22222222222");
 
-
             List<Employee> employees = employeeRepository.findAll();
 
             if (employees.isEmpty()) {
@@ -78,7 +78,7 @@ public class BackupService {
 
             }
 
-            if(!checkBackupProcess()){
+            if (!checkBackupProcess()) {
                 backup.setStatus(BackupStatus.SKIPPED);
                 backup.setEndedAt(LocalDate.now());
                 backup = backupRepository.save(backup);
@@ -86,68 +86,69 @@ public class BackupService {
                 log.info("44444444");
 
                 return backupMapper.toDto(backup);
-            }else{
+            } else {
                 log.info("555555");
 
-            // CSV 파일 생성 및 바이트 배열 추출
-            byte[] csvBytes;
-            String fileName = "employees-backup-" + LocalDate.now()
-                    .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".csv";
-            String filePath = "backups/" + fileName;
+                // CSV 파일 생성 및 바이트 배열 추출
+                byte[] csvBytes;
+                String fileName = "employees-backup-" + LocalDate.now()
+                        .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".csv";
+                String filePath = "backups/" + fileName;
 
-            // 메모리에 CSV 데이터를 작성하는 로직으로 변경
-            try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    OutputStreamWriter writer = new OutputStreamWriter(bos,
-                            StandardCharsets.UTF_8)) {
+                // 메모리에 CSV 데이터를 작성하는 로직으로 변경
+                try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        OutputStreamWriter writer = new OutputStreamWriter(bos,
+                                StandardCharsets.UTF_8)) {
 
-                writer.append(
-                        "id,name,email,employee_number,department_id,position,hire_date,status\n");
+                    writer.append(
+                            "id,name,email,employee_number,department_id,position,hire_date,status\n");
 
-                for (Employee employee : employees) {
-                    writer.append(String.join(",",
-                            String.valueOf(employee.getId()),
-                            employee.getName(),
-                            employee.getEmail(),
-                            employee.getEmployeeNumber(),
-                            employee.getDepartment() != null ? String.valueOf(
-                                    employee.getDepartment().getId()) : "",
-                            employee.getPosition(),
-                            employee.getHireDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-                            employee.getStatus().name()
-                    ));
-                    writer.append("\n");
-                }
-                writer.flush();
+                    for (Employee employee : employees) {
+                        writer.append(String.join(",",
+                                String.valueOf(employee.getId()),
+                                employee.getName(),
+                                employee.getEmail(),
+                                employee.getEmployeeNumber(),
+                                employee.getDepartment() != null ? String.valueOf(
+                                        employee.getDepartment().getId()) : "",
+                                employee.getPosition(),
+                                employee.getHireDate()
+                                        .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                                employee.getStatus().name()
+                        ));
+                        writer.append("\n");
+                    }
+                    writer.flush();
 
-                csvBytes = bos.toByteArray();
+                    csvBytes = bos.toByteArray();
 
-                // 파일 정보 엔티티로 저장
+                    // 파일 정보 엔티티로 저장
 //                File file = File.builder()
 //                        .fileName(fileName)
 //                        .contentType("text/csv")
 //                        .size((long) csvBytes.length)
 //                        .build();
-                File file = new File(fileName, "text/csv", (long) csvBytes.length);
-                file = fileRepository.save(file);
+                    File file = new File(fileName, "text/csv", (long) csvBytes.length);
+                    file = fileRepository.save(file);
 
-                // 백업 이력 업데이트
-                backup.setFile(file);
-                backup.setStatus(BackupStatus.COMPLETED);
-                backup.setEndedAt(LocalDate.now());
-                backupRepository.save(backup);
-                fileStorage.put(file.getId(), csvBytes);
+                    // 백업 이력 업데이트
+                    backup.setFile(file);
+                    backup.setStatus(BackupStatus.COMPLETED);
+                    backup.setEndedAt(LocalDate.now());
+                    backupRepository.save(backup);
+                    fileStorage.put(file.getId(), csvBytes);
 
-                log.info("자동 백업 작업이 완료되었습니다. 파일 정보 ID: {}", file.getId());
+                    log.info("자동 백업 작업이 완료되었습니다. 파일 정보 ID: {}", file.getId());
 
-            } catch (IOException e) {
-                log.error("CSV 파일 생성 중 오류가 발생했습니다.", e);
-                backup.setStatus(BackupStatus.FAILED);
-                backup.setEndedAt(LocalDate.now());
-                backup.setFile(null);
-                backupRepository.save(backup);
-                return backupMapper.toDto(backup);
+                } catch (IOException e) {
+                    log.error("CSV 파일 생성 중 오류가 발생했습니다.", e);
+                    backup.setStatus(BackupStatus.FAILED);
+                    backup.setEndedAt(LocalDate.now());
+                    backup.setFile(null);
+                    backupRepository.save(backup);
+                    return backupMapper.toDto(backup);
+                }
             }
-}
 
         } catch (Exception e) {
             log.error("자동 백업 작업 중 예상치 못한 오류가 발생했습니다.", e);
@@ -162,19 +163,21 @@ public class BackupService {
     }
 
     @Transactional
-    public CursorPageResponseBackupDto findByCondition(BackupFindRequest request) {
-        String worker = request.worker();
-        LocalDate startedAtFrom = request.startedAtFrom();
-        LocalDate startedAtTo = request.startedAtTo();
-        BackupStatus status = request.status();
+    public CursorPageResponseBackupDto findByCondition(
+            String worker,
+            BackupStatus status,
+            LocalDate startedAtFrom,
+            LocalDate startedAtTo,
+            Long idAfter,        // 이전 페이지의 마지막 ID
+            String cursor,       // 커서(선택)
+            Integer size,
+            String sortField,
+            String sortDirection
+    ) {
 
-        Long idAfter = request.idAfter();
-        String cursor = request.cursor();
-        int size = (request.size() != null && request.size() > 0) ? request.size() : 10;
-        String sortField = (request.sortField() != null) ? request.sortField() : "startedAt";
-        String sortDirection = (request.sortDirection() != null) ? request.sortDirection() : "DESC";
-
-        log.info("sortField: {}", sortField);
+        size = size != null && size > 0 ? size : 10;
+        sortField = sortField != null ? sortField : "startedAt";
+        sortDirection = sortDirection != null ? sortDirection : "DESC";
 
         Sort.Direction direction = Sort.Direction.fromString(sortDirection);
         Sort sort = Sort.by(direction, sortField);
@@ -209,13 +212,11 @@ public class BackupService {
         LocalDate lastBackupTime = null;
         Backup lastCompletedBackup = backupRepository.findLatest(BackupStatus.COMPLETED);
 
-
         if (lastCompletedBackup == null) {
             return true;
         }
         lastBackupTime = lastCompletedBackup.getStartedAt();
         log.info("마지막백업시간: {}", lastBackupTime);
-
 
         // 2. 가장 최근 직원 정보 수정 시간 가져옴
         Optional<Change_log> latestChangeLog = changeLogRepository.findFirstByOrderByAtDesc();
@@ -225,7 +226,7 @@ public class BackupService {
             LocalDate latestChangeTime = LocalDate.from(latestChangeLog.get().getAt());
             log.info("마지막 로그 시간: {}", latestChangeTime);
 
-            if(latestChangeTime.isBefore(lastBackupTime)) {
+            if (latestChangeTime.isBefore(lastBackupTime)) {
                 return false;
             }
         }

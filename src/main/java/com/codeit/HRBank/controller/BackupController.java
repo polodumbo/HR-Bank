@@ -10,6 +10,7 @@ import com.codeit.HRBank.repository.FileRepository;
 import com.codeit.HRBank.service.BackupService;
 import com.codeit.HRBank.storage.FileStorage;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -56,9 +57,18 @@ public class BackupController {
     //페이지네이션 (정렬조건)
     @GetMapping
     public ResponseEntity<CursorPageResponseBackupDto> findByConfidence(
-            @RequestBody BackupFindRequest request
+            @RequestParam(required = false) String worker,
+            @RequestParam(required = false) BackupStatus status,
+            @RequestParam(required = false) LocalDate startedAtFrom,
+            @RequestParam(required = false) LocalDate startedAtTo,
+            @RequestParam(required = false) Long idAfter,        // 이전 페이지의 마지막 ID
+            @RequestParam(required = false) String cursor,       // 커서(선택)
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(defaultValue = "at") String sortField,
+            @RequestParam(defaultValue = "desc") String sortDirection
+
     ){
-        CursorPageResponseBackupDto response = backupService.findByCondition(request);
+        CursorPageResponseBackupDto response = backupService.findByCondition(worker, status, startedAtFrom, startedAtTo, idAfter, cursor, size, sortField, sortDirection);
         return ResponseEntity.
         status(HttpStatus.OK).body(response);
     }
