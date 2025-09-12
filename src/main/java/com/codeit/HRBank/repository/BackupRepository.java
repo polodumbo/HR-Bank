@@ -41,8 +41,8 @@ public interface BackupRepository extends JpaRepository<Backup, Long> {
             """)
     Slice<Backup> findByCondition(
             @Param("worker") String worker,
-            @Param("startedAtFrom") LocalDate startedAtFrom,
-            @Param("startedAtTo") LocalDate startedAtTo,
+            @Param("startedAtFrom") LocalDateTime startedAtFrom,
+            @Param("startedAtTo") LocalDateTime startedAtTo,
             @Param("status") BackupStatus status,
             @Param("idAfter") Long idAfter,
             Pageable pageable

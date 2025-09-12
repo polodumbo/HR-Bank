@@ -10,11 +10,11 @@ import com.codeit.HRBank.repository.FileRepository;
 import com.codeit.HRBank.service.BackupService;
 import com.codeit.HRBank.storage.FileStorage;
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/backups")
@@ -37,6 +38,8 @@ public class BackupController {
     @PostMapping
     public ResponseEntity<BackupDto> create(HttpServletRequest request){
         BackupDto createdBackup = backupService.create(request.getRemoteAddr());
+
+        log.info("startedAtFrom: {}",request.getSession().getCreationTime());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(createdBackup);
@@ -46,7 +49,7 @@ public class BackupController {
     public ResponseEntity<?> download(@PathVariable("id") Long id){
         File file = fileRepository.findById(id).get();
         FileDto dto = new FileDto(file.getId(), file.getFileName(), file.getSize(), file.getContentType());
-        return fileStorage.download(dto);
+        return fileStorage.download(dto, "/backup");
     }
     /*
     - **{작업자}**, **{시작 시간}**, **{상태}**로 이력 목록을 조회할 수 있습니다.
@@ -59,8 +62,8 @@ public class BackupController {
     public ResponseEntity<CursorPageResponseBackupDto> findByConfidence(
             @RequestParam(required = false) String worker,
             @RequestParam(required = false) BackupStatus status,
-            @RequestParam(required = false) LocalDate startedAtFrom,
-            @RequestParam(required = false) LocalDate startedAtTo,
+            @RequestParam(required = false) LocalDateTime startedAtFrom,
+            @RequestParam(required = false) LocalDateTime startedAtTo,
             @RequestParam(required = false) Long idAfter,        // 이전 페이지의 마지막 ID
             @RequestParam(required = false) String cursor,       // 커서(선택)
             @RequestParam(defaultValue = "10") Integer size,
@@ -68,6 +71,7 @@ public class BackupController {
             @RequestParam(defaultValue = "desc") String sortDirection
 
     ){
+
         CursorPageResponseBackupDto response = backupService.findByCondition(worker, status, startedAtFrom, startedAtTo, idAfter, cursor, size, sortField, sortDirection);
         return ResponseEntity.
         status(HttpStatus.OK).body(response);

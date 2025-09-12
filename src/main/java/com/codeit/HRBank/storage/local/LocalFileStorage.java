@@ -22,85 +22,96 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(name = "hrbank.storage.type", havingValue = "local")
 public class LocalFileStorage implements FileStorage {
 
-  private final Path root;
+    private final Path root;
 
-  public LocalFileStorage(
-      @Value(".hrbank/storage") Path root
-  ) {
-    this.root = root;
-  }
-
-  @PostConstruct
-  public void init() {
-    if (!Files.exists(root)) {
-      try {
-        Files.createDirectories(root);
-      } catch (IOException e) {
-        e.printStackTrace();
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
-  @Override
-  public Long put(Long fileId, byte[] bytes) {
-    Path filePath = resolvePath(fileId);
-    if (Files.exists(filePath)) {
-      throw new IllegalArgumentException("File already exists!");
-    }
-    try (OutputStream outputStream = Files.newOutputStream(filePath)) {
-      outputStream.write(bytes);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-    return fileId;
-  }
-
-  @Override
-  public InputStream get(Long fileId) {
-    Path filePath = resolvePath(fileId);
-    if (Files.notExists(filePath)) {
-      throw new NoSuchElementException("File with key " + fileId + " does not exist");
-    }
-    try {
-      return Files.newInputStream(filePath);
-    } catch (IOException e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
-    }
-  }
-
-  private Path resolvePath(Long fileId) {
-    return root.resolve(fileId.toString());
-  }
-
-  @Override
-  public ResponseEntity<Resource> download(FileDto metaData) {
-    InputStream inputStream = get(metaData.id());
-    Resource resource = new InputStreamResource(inputStream);
-
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .header(HttpHeaders.CONTENT_DISPOSITION,
-            "attachment; filename=\"" + metaData.fileName() + "\"")
-        .header(HttpHeaders.CONTENT_TYPE, metaData.contentType())
-        .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(metaData.size()))
-        .body(resource);
-  }
-
-  @Override
-  public void delete(Long fileId) {
-    Path filePath = resolvePath(fileId);
-    if (Files.notExists(filePath)) {
-      throw new NoSuchElementException("File" + fileId + "not found");
-    }
-    try {
-      Files.delete(filePath);          // 실제 파일 삭제
-    } catch (IOException e) {
-      throw new RuntimeException("파일 삭제 실패: " + fileId, e);
+    public LocalFileStorage(
+            @Value(".hrbank/storage") Path root
+    ) {
+        this.root = root;
     }
 
-  }
+    @PostConstruct
+    public void init() {
+        if (!Files.exists(root)) {
+            try {
+                Files.createDirectories(root);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Override
+    public Long put(Long fileId, byte[] bytes, String path) {
+        Path filePath = resolvePath(fileId, path);
+        if (Files.exists(filePath)) {
+            throw new IllegalArgumentException("File already exists!");
+        }
+        Path directoryPath = filePath.getParent();
+
+        if (directoryPath != null) {
+            try{
+            Files.createDirectories(directoryPath);}
+            catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+        }
+
+        try (OutputStream outputStream = Files.newOutputStream(filePath)) {
+            outputStream.write(bytes);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return fileId;
+    }
+
+    @Override
+    public InputStream get(Long fileId, String path) {
+        Path filePath = resolvePath(fileId, path);
+        if (Files.notExists(filePath)) {
+            throw new NoSuchElementException("File with key " + fileId + " does not exist");
+        }
+        try {
+            return Files.newInputStream(filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Path resolvePath(Long fileId, String path) {
+        return root.resolve(path + fileId.toString());
+    }
+
+    @Override
+    public ResponseEntity<Resource> download(FileDto metaData, String path) {
+        InputStream inputStream = get(metaData.id(), path);
+        Resource resource = new InputStreamResource(inputStream);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + metaData.fileName() + "\"")
+                .header(HttpHeaders.CONTENT_TYPE, metaData.contentType())
+                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(metaData.size()))
+                .body(resource);
+    }
+
+    @Override
+    public void delete(Long fileId, String path) {
+        Path filePath = resolvePath(fileId, path);
+        if (Files.notExists(filePath)) {
+            throw new NoSuchElementException("File" + fileId + "not found");
+        }
+        try {
+            Files.delete(filePath);          // 실제 파일 삭제
+        } catch (IOException e) {
+            throw new RuntimeException("파일 삭제 실패: " + fileId, e);
+        }
+
+    }
 
 
 }

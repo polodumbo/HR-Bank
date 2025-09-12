@@ -8,12 +8,12 @@ import org.springframework.http.ResponseEntity;
 
 public interface FileStorage {
 
-  Long put(Long fileId, byte[] bytes);
+  Long put(Long fileId, byte[] bytes, String path);
 
-  InputStream get(Long fileId);
+  InputStream get(Long fileId, String path);
 
-  ResponseEntity<Resource> download(FileDto metaData);
+  ResponseEntity<Resource> download(FileDto metaData, String path);
 
-  void delete(Long fileId);
+  void delete(Long fileId, String path);
 
 }
