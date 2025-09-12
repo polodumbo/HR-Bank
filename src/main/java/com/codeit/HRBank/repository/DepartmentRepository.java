@@ -18,8 +18,8 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
                 AND (:nameOrDescription IS NULL OR d.name LIKE '%' || :nameOrDescription || '%' OR d.description LIKE '%' || :nameOrDescription || '%' )
             """)
     Slice<Department> findByCondition(
-            @Param("nameOrDescription") String nameOrDescription,
             @Param("idAfter") Long idAfter,
+            @Param("nameOrDescription") String nameOrDescription,
             Pageable pageable
     );
 }
