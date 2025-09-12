@@ -1,8 +1,5 @@
 package com.codeit.HRBank.service;
 
-import com.codeit.HRBank.domain.ChangeLogType;
-import com.codeit.HRBank.domain.Change_log;
-import com.codeit.HRBank.domain.Change_log_diff;
 import com.codeit.HRBank.domain.Department;
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.File;
@@ -12,34 +9,25 @@ import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
 import com.codeit.HRBank.dto.request.EmployeeUpdateRequest;
 import com.codeit.HRBank.dto.request.FileCreateRequest;
 import com.codeit.HRBank.dto.data.FileDto;
-import com.codeit.HRBank.dto.response.CursorPageResponseDepartmentDto;
 import com.codeit.HRBank.dto.response.CursorPageResponseEmployeeDto;
 import com.codeit.HRBank.dto.response.EmployeeDetailsResponse;
 import com.codeit.HRBank.dto.response.EmployeeResponse;
 import com.codeit.HRBank.exception.DuplicateEmailException;
 import com.codeit.HRBank.mapper.EmployeeMapper;
-import com.codeit.HRBank.repository.ChangeLogDiffRepository;
-import com.codeit.HRBank.repository.ChangeLogRepository;
 import com.codeit.HRBank.repository.DepartmentRepository;
 import com.codeit.HRBank.repository.EmployeeRepository;
 import com.codeit.HRBank.repository.FileRepository;
 import jakarta.persistence.EntityNotFoundException;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.batch.core.configuration.DuplicateJobException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -62,25 +50,25 @@ public class EmployeeService {
   @Transactional
   public Employee registerNewEmployee(EmployeeRegistrationRequest request,
       MultipartFile profileImage) {
-    validateEmail(request.getEmail());
-    Department department = departmentRepository.findByName(request.getDepartmentName())
-        .orElseThrow(
-            () -> new NoSuchElementException(
-                "부서 정보를 찾을 수 없습니다. ID: " + request.getDepartmentName()));
+    validateEmail(request.email());
+
+    Department department = departmentRepository.findById(request.departmentId())
+        .orElseThrow(() -> new NoSuchElementException("부서 정보를 찾을 수 없습니다. ID: " + request.departmentId()));
 
     String employeeNumber = generateEmployeeNumber();
     File profileFile = saveProfileImage(profileImage);
 
     Employee newEmployee = Employee.builder()
-        .name(request.getName())
-        .email(request.getEmail())
+        .name(request.name())
+        .email(request.email())
         .employeeNumber(employeeNumber)
         .department(department)
-        .position(request.getPosition())
-        .hireDate(request.getHireDate())
+        .position(request.position())
+        .hireDate(request.hireDate())
         .status(EmploymentStatus.ACTIVE)
         .profileImage(profileFile)
         .build();
+
     Employee savedEmployee = employeeRepository.save(newEmployee);
     changeLogService.create(newEmployee);
     return savedEmployee;
@@ -165,10 +153,9 @@ public class EmployeeService {
     if (updateRequest.getEmail() != null) {
       employee.setEmail(updateRequest.getEmail());
     }
-    if (updateRequest.getDepartmentName() != null) {
-      Department department = departmentRepository.findByName(updateRequest.getDepartmentName())
-          .orElseThrow(() -> new NoSuchElementException(
-              "부서를 찾을 수 없습니다. ID: " + updateRequest.getDepartmentName()));
+    if (updateRequest.getDepartmentId() != null) {
+      Department department = departmentRepository.findByName(updateRequest.getDepartmentId())
+          .orElseThrow(() -> new NoSuchElementException("부서를 찾을 수 없습니다. ID: " + updateRequest.getDepartmentId()));
       employee.setDepartment(department);
     }
     if (updateRequest.getPosition() != null) {
