@@ -55,24 +55,24 @@ public interface EmployeeRepository extends JpaRepository<Employee,Long> {
 
 
 
-    @Query(value = """
-        SELECT
-            CAST(DATE_TRUNC(:unit, e.hire_date) AS text),
-            COUNT(e.id)
-        FROM
-            employees e
-        WHERE
-            e.hire_date >= :from AND e.hire_date <= :to
-        GROUP BY
-            DATE_TRUNC(:unit, e.hire_date)
-        ORDER BY
-            DATE_TRUNC(:unit, e.hire_date)
-    """, nativeQuery = true)
-    List<Object[]> getTrend(
-            @Param("from") LocalDate from,
-            @Param("to") LocalDate to,
-            @Param("unit") String unit
-    );
+//    @Query(value = """
+//        SELECT
+//            CAST(DATE_TRUNC(:unit, e.hire_date) AS text),
+//            COUNT(e.id)
+//        FROM
+//            employees e
+//        WHERE
+//            e.hire_date >= :from AND e.hire_date <= :to
+//        GROUP BY
+//            DATE_TRUNC(:unit, e.hire_date)
+//        ORDER BY
+//            DATE_TRUNC(:unit, e.hire_date)
+//    """, nativeQuery = true)
+//    List<Object[]> getTrend(
+//            @Param("from") LocalDate from,
+//            @Param("to") LocalDate to,
+//            @Param("unit") String unit
+//    );
 
     // 부서별 분포를 조회하는 쿼리
     @Query("""
@@ -108,5 +108,80 @@ public interface EmployeeRepository extends JpaRepository<Employee,Long> {
     """)
     List<Object[]> getDistributionByPosition(@Param("status") EmploymentStatus status);
 
+    //trend 그냥 6개로 구현
 
+    @Query(value = """
+        SELECT
+            CAST(DATE_TRUNC('day', e.hire_date) AS TEXT),
+            COUNT(e.id)
+        FROM
+            employees e
+        WHERE
+            e.hire_date >= :from AND e.hire_date <= :to
+        GROUP BY
+            DATE_TRUNC('day', e.hire_date)
+        ORDER BY
+            DATE_TRUNC('day', e.hire_date)
+    """, nativeQuery = true)
+    List<Object[]> getTrendByDay(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query(value = """
+        SELECT
+            CAST(DATE_TRUNC('week', e.hire_date) AS TEXT),
+            COUNT(e.id)
+        FROM
+            employees e
+        WHERE
+            e.hire_date >= :from AND e.hire_date <= :to
+        GROUP BY
+            DATE_TRUNC('week', e.hire_date)
+        ORDER BY
+            DATE_TRUNC('week', e.hire_date)
+    """, nativeQuery = true)
+    List<Object[]> getTrendByWeek(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query(value = """
+        SELECT
+            CAST(DATE_TRUNC('month', e.hire_date) AS TEXT),
+            COUNT(e.id)
+        FROM
+            employees e
+        WHERE
+            e.hire_date >= :from AND e.hire_date <= :to
+        GROUP BY
+            DATE_TRUNC('month', e.hire_date)
+        ORDER BY
+            DATE_TRUNC('month', e.hire_date)
+    """, nativeQuery = true)
+    List<Object[]> getTrendByMonth(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query(value = """
+        SELECT
+            CAST(DATE_TRUNC('quarter', e.hire_date) AS TEXT),
+            COUNT(e.id)
+        FROM
+            employees e
+        WHERE
+            e.hire_date >= :from AND e.hire_date <= :to
+        GROUP BY
+            DATE_TRUNC('quarter', e.hire_date)
+        ORDER BY
+            DATE_TRUNC('quarter', e.hire_date)
+    """, nativeQuery = true)
+    List<Object[]> getTrendByQuarter(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query(value = """
+        SELECT
+            CAST(DATE_TRUNC('year', e.hire_date) AS TEXT),
+            COUNT(e.id)
+        FROM
+            employees e
+        WHERE
+            e.hire_date >= :from AND e.hire_date <= :to
+        GROUP BY
+            DATE_TRUNC('year', e.hire_date)
+        ORDER BY
+            DATE_TRUNC('year', e.hire_date)
+    """, nativeQuery = true)
+    List<Object[]> getTrendByYear(@Param("from") LocalDate from, @Param("to") LocalDate to);
 }

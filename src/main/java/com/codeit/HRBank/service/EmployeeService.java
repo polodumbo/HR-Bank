@@ -22,6 +22,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -249,29 +250,51 @@ public class EmployeeService {
         return employeeRepository.countByCondition(status, fromDate, toDate);
     }
 
-    public List<EmployeeTrendDto> getTrend(LocalDate from, LocalDate to, String unit) {
-        to = (to != null) ? to : LocalDate.now();
+    public List<EmployeeTrendDto> getTrend(
+    LocalDate from,
+    LocalDate to,
+    String unit
+    ) {
+        String finalUnit = Optional.ofNullable(unit).orElse("month").toLowerCase();
+        ChronoUnit chronoUnit = getChronoUnit(finalUnit);
 
-        try {
-            ChronoUnit chronoUnit = ChronoUnit.valueOf(unit.toUpperCase());
-            from = (from != null) ? from : LocalDate.now().minus(12, chronoUnit);
-            // ...chronoUnit을 사용하는 코드...
-        } catch (IllegalArgumentException e) {
-            // 유효하지 않은 unit이 들어왔을 때의 처리
-            System.err.println("잘못된 시간 단위: " + unit);
-            // 예외를 다시 던지거나 기본값을 설정할 수 있습니다.
+        LocalDate finalFrom = Optional.ofNullable(from)
+                .orElse(LocalDate.now().minus(12, chronoUnit));
+
+        LocalDate finalTo = Optional.ofNullable(to)
+                .orElse(LocalDate.now());
+
+        List<Object[]> queryResult;
+        switch (finalUnit) {
+            case "day":
+                queryResult = employeeRepository.getTrendByDay(finalFrom, finalTo);
+                break;
+            case "week":
+                queryResult = employeeRepository.getTrendByWeek(finalFrom, finalTo);
+                break;
+            case "month":
+                queryResult = employeeRepository.getTrendByMonth(finalFrom, finalTo);
+                break;
+            case "quarter":
+                queryResult = employeeRepository.getTrendByQuarter(finalFrom, finalTo);
+                break;
+            case "year":
+                queryResult = employeeRepository.getTrendByYear(finalFrom, finalTo);
+                break;
+            default:
+                throw new IllegalArgumentException("지원하지 않는 시간 단위입니다: " + unit);
         }
 
-        List<Object[]> queryResult = employeeRepository.getTrend(from, to, unit);
         List<EmployeeTrendDto> trendList = new ArrayList<>();
         Long previousCount = null;
 
-        for (Object[] result : queryResult) {
-            LocalDate date = LocalDate.parse((String) result[0]);
-            Long currentCount = ((Number) result[1]).longValue();
-
+        for (Object[] row : queryResult) {
+            log.info("로그로그: {}",row[0].toString());
+            String dateString =  (String) row[0];
+            LocalDate date = LocalDate.parse(dateString.substring(0, 10));
+            Long currentCount = ((Number) row[1]).longValue();
             Long change = 0L;
-            Double changeRate = 0.0;
+            double changeRate = 0.0;
 
             if (previousCount != null) {
                 change = currentCount - previousCount;
@@ -280,20 +303,22 @@ public class EmployeeService {
                 }
             }
 
-            trendList.add(
-                    new EmployeeTrendDto(
-                            date,
-                            currentCount,
-                            change,
-                            changeRate
-                    )
-            );
-
+            trendList.add(new EmployeeTrendDto(date, currentCount, change, changeRate));
             previousCount = currentCount;
         }
 
         return trendList;
+    }
 
+    private ChronoUnit getChronoUnit(String unit) {
+        switch (unit) {
+            case "day": return ChronoUnit.DAYS;
+            case "week": return ChronoUnit.WEEKS;
+            case "month": return ChronoUnit.MONTHS;
+            case "quarter": return ChronoUnit.MONTHS; // 분기는 월 단위로 계산
+            case "year": return ChronoUnit.YEARS;
+            default: return ChronoUnit.MONTHS;
+        }
     }
 
     public List<EmployeeDistributionDto> getDistribution(String groupBy, EmploymentStatus status) {
