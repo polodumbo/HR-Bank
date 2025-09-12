@@ -203,8 +203,8 @@ public class EmployeeService {
       String employeeNumber,
       String departmentName,
       String position,
-          LocalDate hireDateFrom,
-          LocalDate hireDateTo,
+      LocalDate hireDateFrom,
+      LocalDate hireDateTo,
       EmploymentStatus status,
       Long idAfter,        // 이전 페이지의 마지막 ID
       String cursor,       // 커서(선택)
@@ -232,55 +232,55 @@ public class EmployeeService {
   }
 
   public Long countByCondition(EmploymentStatus status, LocalDate fromDate,
-          LocalDate toDate) {
+      LocalDate toDate) {
     return employeeRepository.countByCondition(status, fromDate, toDate);
   }
 
-    public List<EmployeeTrendDto> getTrend(LocalDate from, LocalDate to, String unit) {
-        to = (to != null) ? to : LocalDate.now();
+  public List<EmployeeTrendDto> getTrend(LocalDate from, LocalDate to, String unit) {
+    to = (to != null) ? to : LocalDate.now();
 
-        try {
-            ChronoUnit chronoUnit = ChronoUnit.valueOf(unit.toUpperCase());
-            from = (from != null) ? from : LocalDate.now().minus(12,chronoUnit);
-            // ...chronoUnit을 사용하는 코드...
-        } catch (IllegalArgumentException e) {
-            // 유효하지 않은 unit이 들어왔을 때의 처리
-            System.err.println("잘못된 시간 단위: " + unit);
-            // 예외를 다시 던지거나 기본값을 설정할 수 있습니다.
-        }
-
-        List<Object[]> queryResult = employeeRepository.getTrend(from, to, unit);
-        List<EmployeeTrendDto> trendList = new ArrayList<>();
-        Long previousCount = null;
-
-        for (Object[] result : queryResult) {
-            LocalDate date = LocalDate.parse((String) result[0]);
-            Long currentCount = ((Number) result[1]).longValue();
-
-            Long change = 0L;
-            Double changeRate = 0.0;
-
-            if (previousCount != null) {
-                change = currentCount - previousCount;
-                if (previousCount > 0) {
-                    changeRate = (double) change / previousCount * 100.0;
-                }
-            }
-
-            trendList.add(
-                    new EmployeeTrendDto(
-                            date,
-                            currentCount,
-                            change,
-                            changeRate
-                    )
-            );
-
-            previousCount = currentCount;
-        }
-
-        return trendList;
-
+    try {
+      ChronoUnit chronoUnit = ChronoUnit.valueOf(unit.toUpperCase());
+      from = (from != null) ? from : LocalDate.now().minus(12, chronoUnit);
+      // ...chronoUnit을 사용하는 코드...
+    } catch (IllegalArgumentException e) {
+      // 유효하지 않은 unit이 들어왔을 때의 처리
+      System.err.println("잘못된 시간 단위: " + unit);
+      // 예외를 다시 던지거나 기본값을 설정할 수 있습니다.
     }
+
+    List<Object[]> queryResult = employeeRepository.getTrend(from, to, unit);
+    List<EmployeeTrendDto> trendList = new ArrayList<>();
+    Long previousCount = null;
+
+    for (Object[] result : queryResult) {
+      LocalDate date = LocalDate.parse((String) result[0]);
+      Long currentCount = ((Number) result[1]).longValue();
+
+      Long change = 0L;
+      Double changeRate = 0.0;
+
+      if (previousCount != null) {
+        change = currentCount - previousCount;
+        if (previousCount > 0) {
+          changeRate = (double) change / previousCount * 100.0;
+        }
+      }
+
+      trendList.add(
+          new EmployeeTrendDto(
+              date,
+              currentCount,
+              change,
+              changeRate
+          )
+      );
+
+      previousCount = currentCount;
+    }
+
+    return trendList;
+
+  }
 
 }

@@ -3,12 +3,9 @@ package com.codeit.HRBank.service;
 import com.codeit.HRBank.domain.Change_log;
 import com.codeit.HRBank.domain.Change_log_diff;
 import com.codeit.HRBank.domain.Employee;
-import com.codeit.HRBank.dto.data.ChangeLogDto;
-import com.codeit.HRBank.dto.data.DiffDto;
 import com.codeit.HRBank.repository.ChangeLogDiffRepository;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -96,6 +93,6 @@ public class ChangeLogDiffService {
           .afterValue(newVal == null ? null : newVal.toString())
           .build());
     }
-    
+
   }
 }
