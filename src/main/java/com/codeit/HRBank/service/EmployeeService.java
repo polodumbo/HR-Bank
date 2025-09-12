@@ -125,67 +125,70 @@ public class EmployeeService {
 
   //직원 정보 수정
   public EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest updateRequest,
-      String ipAddress) {
-    Employee employee = employeeRepository.findById(id)
-        .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
+      String ipAddress, MultipartFile profileImage) {
 
-    Employee originalEmployee = Employee.builder()
-        .id(employee.getId())
-        .name(employee.getName())
-        .email(employee.getEmail())
-        .employeeNumber(employee.getEmployeeNumber())
-        .department(employee.getDepartment())
-        .position(employee.getPosition())
-        .hireDate(employee.getHireDate())
-        .status(employee.getStatus())
-        .profileImage(employee.getProfileImage())
-        .build();
+      Employee employee = employeeRepository.findById(id)
+          .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
 
-    if (updateRequest.getEmail() != null && !updateRequest.getEmail().equals(employee.getEmail())) {
-      if (employeeRepository.existsByEmail(updateRequest.getEmail())) {
-        throw new DuplicateEmailException("이미 사용 중인 이메일입니다: " + updateRequest.getEmail());
+      Employee originalEmployee = Employee.builder()
+          .id(employee.getId())
+          .name(employee.getName())
+          .email(employee.getEmail())
+          .employeeNumber(employee.getEmployeeNumber())
+          .department(employee.getDepartment())
+          .position(employee.getPosition())
+          .hireDate(employee.getHireDate())
+          .status(employee.getStatus())
+          .profileImage(employee.getProfileImage())
+          .build();
+
+      if (updateRequest.getEmail() != null && !updateRequest.getEmail().equals(employee.getEmail())) {
+          if (employeeRepository.existsByEmail(updateRequest.getEmail())) {
+              throw new DuplicateEmailException("이미 사용 중인 이메일입니다: " + updateRequest.getEmail());
+          }
       }
-    }
 
-    if (updateRequest.getName() != null) {
-      employee.setName(updateRequest.getName());
-    }
-    if (updateRequest.getEmail() != null) {
-      employee.setEmail(updateRequest.getEmail());
-    }
-    if (updateRequest.getDepartmentId() != null) {
-      Department department = departmentRepository.findByName(updateRequest.getDepartmentId())
-          .orElseThrow(() -> new NoSuchElementException("부서를 찾을 수 없습니다. ID: " + updateRequest.getDepartmentId()));
-      employee.setDepartment(department);
-    }
-    if (updateRequest.getPosition() != null) {
-      employee.setPosition(updateRequest.getPosition());
-    }
-    if (updateRequest.getStatus() != null) {
-      employee.setStatus(updateRequest.getStatus());
-    }
-    if (updateRequest.getHireDate() != null) {
-      employee.setHireDate(updateRequest.getHireDate());
-    }
-    if (updateRequest.getProfileImageId() != null) {
-      File profileImage = fileRepository.findById(updateRequest.getProfileImageId())
-          .orElseThrow(() -> new EntityNotFoundException(
-              "프로필 이미지를 찾을 수 없습니다. ID: " + updateRequest.getProfileImageId()));
-
-      if (employee.getProfileImage() != null) {
-        fileService.delete(employee.getProfileImage().getId());
+      if (updateRequest.getName() != null) {
+          employee.setName(updateRequest.getName());
       }
-      employee.setProfileImage(profileImage);
-
-    } else if (employee.getProfileImage() != null) {
-      fileService.delete(employee.getProfileImage().getId());
-      employee.setProfileImage(null);
-    }
+      if (updateRequest.getEmail() != null) {
+          employee.setEmail(updateRequest.getEmail());
+      }
+      if (updateRequest.getDepartmentId() != null) {
+          Department department = departmentRepository.findById(updateRequest.getDepartmentId())
+              .orElseThrow(() -> new NoSuchElementException("부서를 찾을 수 없습니다. ID: " + updateRequest.getDepartmentId()));
+          employee.setDepartment(department);
+      }
+      if (updateRequest.getPosition() != null) {
+          employee.setPosition(updateRequest.getPosition());
+      }
+      if (updateRequest.getStatus() != null) {
+          employee.setStatus(updateRequest.getStatus());
+      }
+      if (updateRequest.getHireDate() != null) {
+          employee.setHireDate(updateRequest.getHireDate());
+      }
+      if (profileImage != null && !profileImage.isEmpty()) {
+          if (employee.getProfileImage() != null) {
+              fileService.delete(employee.getProfileImage().getId());
+          }
+          File newProfileFile = saveProfileImage(profileImage);
+          employee.setProfileImage(newProfileFile);
+      } else {
+          if (updateRequest.getProfileImageId() == null) {
+              if (employee.getProfileImage() != null) {
+                  fileService.delete(employee.getProfileImage().getId());
+              }
+              employee.setProfileImage(null);
+          } else {
+              File existingImage = fileRepository.findById(updateRequest.getProfileImageId())
+                  .orElseThrow(() -> new EntityNotFoundException("포로필 이미지를 찾을 수 없습니다. ID: " + updateRequest.getProfileImageId()));
+              employee.setProfileImage(existingImage);
+          }
+      }
 
     Employee updatedEmployee = employeeRepository.save(employee);
-
     changeLogService.update(originalEmployee, updatedEmployee, ipAddress);
-
     return EmployeeResponse.from(updatedEmployee);
   }
 
