@@ -15,7 +15,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     @Query("""
                 SELECT d FROM Department d
                 WHERE (:idAfter IS NULL OR d.id > :idAfter)
-                AND (:nameOrDescription IS NULL OR d.name LIKE '%' || :nameOrDescription || '%' OR d.description LIKE '%' || :nameOrDescription || '%' )
+                AND d.name LIKE '%' || COALESCE(:nameOrDescription, "") || '%' OR d.description LIKE '%' || COALESCE(:nameOrDescription, "") || '%'
             """)
     Slice<Department> findByCondition(
             @Param("idAfter") Long idAfter,
