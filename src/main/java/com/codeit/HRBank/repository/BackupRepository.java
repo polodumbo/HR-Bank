@@ -34,15 +34,15 @@ public interface BackupRepository extends JpaRepository<Backup, Long> {
     @Query("""
                 SELECT b FROM Backup b
                 WHERE (:idAfter IS NULL OR b.id > :idAfter)
-                AND (:worker IS NULL OR b.worker LIKE CONCAT('%', :worker, '%'))
+                AND b.worker LIKE '%' || COALESCE(:worker, "") || '%'
                 AND b.startedAt >= COALESCE(:startedAtFrom, b.startedAt)
                 AND b.startedAt <= COALESCE(:startedAtTo, b.startedAt)
                 AND (:status IS NULL OR b.status = :status)
             """)
     Slice<Backup> findByCondition(
             @Param("worker") String worker,
-            @Param("startedAtFrom") LocalDate startedAtFrom,
-            @Param("startedAtTo") LocalDate startedAtTo,
+            @Param("startedAtFrom") LocalDateTime startedAtFrom,
+            @Param("startedAtTo") LocalDateTime startedAtTo,
             @Param("status") BackupStatus status,
             @Param("idAfter") Long idAfter,
             Pageable pageable

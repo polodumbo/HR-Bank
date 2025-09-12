@@ -100,7 +100,7 @@ public class EmployeeService {
           profileImage.getBytes()
       );
 
-      FileDto fileDto = fileService.create(fileCreateRequest);
+      FileDto fileDto = fileService.create(fileCreateRequest, "/profile/");
 
       return fileRepository.findById(fileDto.id())
           .orElseThrow(() -> new NoSuchElementException("저장된 파일을 찾을 수 없습니다. ID: " + fileDto.id()));
@@ -118,7 +118,7 @@ public class EmployeeService {
     changeLogService.delete(employee, ipAddress);
 
     if (employee.getProfileImage() != null) {
-      fileService.delete(employee.getProfileImage().getId());
+      fileService.delete(employee.getProfileImage().getId(), "/profile/");
     }
     employeeRepository.delete(employee);
   }
@@ -173,12 +173,12 @@ public class EmployeeService {
               "프로필 이미지를 찾을 수 없습니다. ID: " + updateRequest.getProfileImageId()));
 
       if (employee.getProfileImage() != null) {
-        fileService.delete(employee.getProfileImage().getId());
+        fileService.delete(employee.getProfileImage().getId(), "profile");
       }
       employee.setProfileImage(profileImage);
 
     } else if (employee.getProfileImage() != null) {
-      fileService.delete(employee.getProfileImage().getId());
+      fileService.delete(employee.getProfileImage().getId(), "/profile/");
       employee.setProfileImage(null);
     }
 
