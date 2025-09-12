@@ -58,11 +58,12 @@ public class EmployeeController {
   @PatchMapping("/{id}")
   public ResponseEntity<EmployeeResponse> updateEmployee(
       @PathVariable Long id,
-      @RequestBody EmployeeUpdateRequest updateRequest,
+      @RequestPart("employee") EmployeeUpdateRequest updateRequest,
+      @RequestPart(value= "profile", required = false) MultipartFile profileImage,
       HttpServletRequest request
   ) {
     String ipAddress = request.getRemoteAddr();
-    EmployeeResponse updatedEmployee = employeeService.updateEmployee(id, updateRequest, ipAddress);
+    EmployeeResponse updatedEmployee = employeeService.updateEmployee(id, updateRequest, ipAddress, profileImage);
     return ResponseEntity.ok(updatedEmployee);
   }
 
