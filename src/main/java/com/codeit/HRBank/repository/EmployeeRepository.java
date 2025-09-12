@@ -74,5 +74,39 @@ public interface EmployeeRepository extends JpaRepository<Employee,Long> {
             @Param("unit") String unit
     );
 
+    // 부서별 분포를 조회하는 쿼리
+    @Query("""
+        SELECT
+            e.department.name,
+            COUNT(e.id) AS count,
+            (CAST(COUNT(e.id) AS double) / CAST((SELECT COUNT(e2.id) FROM Employee e2 WHERE e2.status = :status) AS double)) * 100
+        FROM
+            Employee e
+        WHERE
+            e.status = :status
+        GROUP BY
+            e.department.name
+        ORDER BY
+            count DESC
+    """)
+    List<Object[]> getDistributionByDepartment(@Param("status") EmploymentStatus status);
+
+    // 직급별 분포를 조회하는 쿼리
+    @Query("""
+        SELECT
+            e.position,
+            COUNT(e.id) AS count,
+            (CAST(COUNT(e.id) AS double) / CAST((SELECT COUNT(e2.id) FROM Employee e2 WHERE e2.status = :status) AS double)) * 100
+        FROM
+            Employee e
+        WHERE
+            e.status = :status
+        GROUP BY
+            e.position
+        ORDER BY
+            count DESC
+    """)
+    List<Object[]> getDistributionByPosition(@Param("status") EmploymentStatus status);
+
 
 }
