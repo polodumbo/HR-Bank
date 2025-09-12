@@ -2,6 +2,7 @@ package com.codeit.HRBank.controller;
 
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.EmploymentStatus;
+import com.codeit.HRBank.dto.data.EmployeeTrendDto;
 import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
 import com.codeit.HRBank.dto.request.EmployeeUpdateRequest;
 import com.codeit.HRBank.dto.response.CursorPageResponseEmployeeDto;
@@ -10,7 +11,9 @@ import com.codeit.HRBank.dto.response.EmployeeResponse;
 import com.codeit.HRBank.service.EmployeeService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -75,8 +78,8 @@ public class EmployeeController {
       @RequestParam(required = false) String employeeNumber,
       @RequestParam(required = false) String departmentName,
       @RequestParam(required = false) String position,
-      @RequestParam(required = false) LocalDateTime hireDateFrom,
-      @RequestParam(required = false) LocalDateTime hireDateTo,
+      @RequestParam(required = false) LocalDate hireDateFrom,
+      @RequestParam(required = false) LocalDate hireDateTo,
       @RequestParam(required = false) EmploymentStatus status,
       @RequestParam(required = false) Long idAfter,        // 이전 페이지의 마지막 ID
       @RequestParam(required = false) String cursor,       // 커서(선택)
@@ -94,12 +97,24 @@ public class EmployeeController {
   @GetMapping("/count")
   public ResponseEntity<Long> count(
       @RequestParam(required = false) EmploymentStatus status,
-      @RequestParam(required = false) LocalDateTime fromDate,
-      @RequestParam(required = false) LocalDateTime toDate
+      @RequestParam(required = false) LocalDate fromDate,
+      @RequestParam(required = false) LocalDate toDate
 
   ) {
     Long response = employeeService.countByCondition(status, fromDate, toDate);
     return ResponseEntity.
         status(HttpStatus.OK).body(response);
   }
+
+    @GetMapping("/stats/trend")
+    public ResponseEntity<List<EmployeeTrendDto>> getTrend(
+            @RequestParam LocalDate from,
+            @RequestParam LocalDate to,
+            @RequestParam(defaultValue = "month") String unit
+    ){
+
+        List<EmployeeTrendDto> response = employeeService.getTrend(from, to, unit);
+        return ResponseEntity.
+                status(HttpStatus.OK).body(response);
+    }
 }
