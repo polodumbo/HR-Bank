@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 INSERT INTO departments (id, name, description, established_date)
 VALUES (1, 'Dept1', 'Description of Dept1', '2025-06-06 00:56:41');
 INSERT INTO departments (id, name, description, established_date)
@@ -199,8 +198,9 @@ INSERT INTO departments (id, name, description, established_date)
 VALUES (99, 'Dept99', 'Description of Dept99', '2025-10-11 04:35:37');
 INSERT INTO departments (id, name, description, established_date)
 VALUES (100, 'Dept100', 'Description of Dept100', '2024-07-05 09:21:51');
-=======
-INSERT INTO departments (id, name, description, established_date) VALUES (1, 'Dept1', 'Description of Dept1', '2025-06-06');
+
+INSERT INTO departments (id, name, description, established_date)
+VALUES (1, 'Dept1', 'Description of Dept1', '2025-06-06');
 -- INSERT INTO departments (id, name, description, established_date) VALUES (2, 'Dept2', 'Description of Dept2', '2023-04-20 22:58:39');
 -- INSERT INTO departments (id, name, description, established_date) VALUES (3, 'Dept3', 'Description of Dept3', '2025-05-10 02:45:57');
 -- INSERT INTO departments (id, name, description, established_date) VALUES (4, 'Dept4', 'Description of Dept4', '2024-06-10 22:13:59');
@@ -300,7 +300,6 @@ INSERT INTO departments (id, name, description, established_date) VALUES (1, 'De
 -- INSERT INTO departments (id, name, description, established_date) VALUES (98, 'Dept98', 'Description of Dept98', '2023-09-02 11:57:12');
 -- INSERT INTO departments (id, name, description, established_date) VALUES (99, 'Dept99', 'Description of Dept99', '2025-10-11 04:35:37');
 -- INSERT INTO departments (id, name, description, established_date) VALUES (100, 'Dept100', 'Description of Dept100', '2024-07-05 09:21:51');
->>>>>>> main
 
 -- INSERT INTO files (id, file_name, content_type, size) VALUES (1, 'file_1', 'application/octet-stream', 427572);
 -- INSERT INTO files (id, file_name, content_type, size) VALUES (2, 'file_2', 'application/octet-stream', 794229);
@@ -810,4 +809,5 @@ INSERT INTO departments (id, name, description, established_date) VALUES (1, 'De
 SELECT SETVAL(PG_GET_SERIAL_SEQUENCE('departments', 'id'), (SELECT MAX(id) FROM departments));
 SELECT SETVAL(PG_GET_SERIAL_SEQUENCE('employees', 'id'), (SELECT MAX(id) FROM employees));
 SELECT SETVAL(PG_GET_SERIAL_SEQUENCE('change_logs', 'id'), (SELECT MAX(id) FROM change_logs));
-SELECT SETVAL(PG_GET_SERIAL_SEQUENCE('change_log_diffs', 'id'), (SELECT MAX(id) FROM change_log_diffs));
+SELECT SETVAL(PG_GET_SERIAL_SEQUENCE('change_log_diffs', 'id'),
+              (SELECT MAX(id) FROM change_log_diffs));
