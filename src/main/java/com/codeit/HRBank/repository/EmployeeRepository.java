@@ -3,6 +3,8 @@ package com.codeit.HRBank.repository;
 import com.codeit.HRBank.domain.Department;
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.EmploymentStatus;
+import com.codeit.HRBank.dto.data.EmployeeTrendDto;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -33,8 +35,8 @@ public interface EmployeeRepository extends JpaRepository<Employee,Long> {
             @Param("employeeNumber") String employeeNumber,
             @Param("departmentName") String departmentName,
             @Param("position") String position,
-            @Param("hireDateFrom") LocalDateTime hireDateFrom,
-            @Param("hireDateTo") LocalDateTime hireDateTo,
+            @Param("hireDateFrom") LocalDate hireDateFrom,
+            @Param("hireDateTo") LocalDate hireDateTo,
             @Param("status") EmploymentStatus status,
             @Param("idAfter") Long idAfter,
             Pageable pageable
@@ -48,7 +50,29 @@ public interface EmployeeRepository extends JpaRepository<Employee,Long> {
 """)
     Long countByCondition(
             @Param("status") EmploymentStatus status,
-            @Param("fromDate") LocalDateTime fromDate,
-            @Param("toDate") LocalDateTime toDate);
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate);
+
+
+
+    @Query(value = """
+        SELECT
+            CAST(DATE_TRUNC(:unit, e.hire_date) AS text),
+            COUNT(e.id)
+        FROM
+            employees e
+        WHERE
+            e.hire_date >= :from AND e.hire_date <= :to
+        GROUP BY
+            DATE_TRUNC(:unit, e.hire_date)
+        ORDER BY
+            DATE_TRUNC(:unit, e.hire_date)
+    """, nativeQuery = true)
+    List<Object[]> getTrend(
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to,
+            @Param("unit") String unit
+    );
+
 
 }
