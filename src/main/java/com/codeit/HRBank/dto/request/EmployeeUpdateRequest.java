@@ -12,9 +12,10 @@ public class EmployeeUpdateRequest {
 
   private String name;
   private String email;
-  private String departmentName;
+  private String departmentId;
   private String position;
   private LocalDate hireDate;
   private Long profileImageId;
   private EmploymentStatus status;
+  private String memo;
 }
