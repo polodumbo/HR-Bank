@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 public record BackupFindRequest(
         String worker,
         BackupStatus status,
-        LocalDate startedAtFrom,
-        LocalDate startedAtTo,
+        LocalDateTime startedAtFrom,
+        LocalDateTime startedAtTo,
         Long idAfter,
         String cursor,
         Integer size,
