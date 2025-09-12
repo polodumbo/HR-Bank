@@ -110,7 +110,7 @@ public class DepartmentService {
         Pageable pageable = PageRequest.of(0, size, sort);
 
         Slice<Department> departmentSlice = departmentRepository.findByCondition(
-                nameOrDescription, idAfter, pageable
+            idAfter, nameOrDescription, pageable
         );
 
         return departmentMapper.toDtoSlice(departmentSlice);

@@ -1,12 +1,13 @@
 package com.codeit.HRBank.dto.data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record DepartmentDto(
     Long id,
     String name,
     String description,
-    LocalDateTime establishedDate
+    LocalDate establishedDate
     // private Long employeeCount; // 구현 전 컴파일 에러 방지 주석
 ) {
 
