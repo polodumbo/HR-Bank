@@ -19,8 +19,8 @@ public interface ChangeLogRepository extends JpaRepository<Change_log, Long> {
 
   @Query("""
         SELECT COUNT(c) FROM Change_log c
-        WHERE c.at >= COALESCE(:fromDate, c.at)
-            AND c.at <=  COALESCE(:toDate, c.at)
+        WHERE c.at >= COALESCE(:fromDateTime, c.at)
+            AND c.at <=  COALESCE(:toDateTime, c.at)
       """)
   Long countByDate(
       @Param("fromDateTime") LocalDateTime fromDateTime,
@@ -46,4 +46,6 @@ public interface ChangeLogRepository extends JpaRepository<Change_log, Long> {
       @Param("idAfter") Long idAfter,
       Pageable pageable
   );
+
+
 }

@@ -17,6 +17,7 @@ import com.codeit.HRBank.mapper.ChangeLogMapper;
 import com.codeit.HRBank.repository.ChangeLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChangeLogService {
@@ -34,6 +36,8 @@ public class ChangeLogService {
     private final ChangeLogMapper changeLogMapper;
     private final ChangeLogDiffService changeLogDiffService;
     private final ChangeLogDiffRepository changeLogDiffRepository;
+
+
 
     public String getClientIpAddress() {
         String ipAddress = request.getHeader("X-Forwarded-For");
@@ -153,15 +157,23 @@ public class ChangeLogService {
     public long getChangeLogCount(Instant fromDate, Instant toDate) {
 
         ZoneId kstZoneId = ZoneId.of("Asia/Seoul");
-        LocalDateTime fromDateTime = LocalDateTime.ofInstant(fromDate, kstZoneId);
-        LocalDateTime toDateTime = LocalDateTime.ofInstant(toDate, kstZoneId);
-        // 기본값 설정: fromDate = 7일 전, toDate = 현재
-        if (fromDateTime == null) {
+        LocalDateTime fromDateTime;
+        LocalDateTime toDateTime;
+
+        log.info("fromDate : {}", fromDate);
+        if (fromDate != null) {
+            fromDateTime = LocalDateTime.ofInstant(fromDate, kstZoneId);
+        } else {
             fromDateTime = LocalDateTime.now().minusDays(7);
         }
-        if (toDateTime == null) {
+
+        if (toDate != null) {
+            toDateTime = LocalDateTime.ofInstant(toDate, kstZoneId);
+        } else {
             toDateTime = LocalDateTime.now();
         }
+        log.info("fromDate : {}", fromDateTime);
+        log.info("toDate : {}", toDateTime);
 
         return changeLogRepository.countByDate(fromDateTime, toDateTime);
     }
