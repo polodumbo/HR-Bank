@@ -109,8 +109,8 @@ public class EmployeeController {
 
     @GetMapping("/stats/trend")
     public ResponseEntity<List<EmployeeTrendDto>> getTrend(
-            @RequestParam LocalDate from,
-            @RequestParam LocalDate to,
+            @RequestParam(required = false) LocalDate from,
+            @RequestParam(required = false) LocalDate to,
             @RequestParam(defaultValue = "month") String unit
     ){
 

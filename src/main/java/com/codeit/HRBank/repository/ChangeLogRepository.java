@@ -19,12 +19,12 @@ public interface ChangeLogRepository extends JpaRepository<Change_log, Long> {
 
   @Query("""
         SELECT COUNT(c) FROM Change_log c
-        WHERE (c.at >= :fromDate)
-            AND (c.at <  :toDate)
+        WHERE c.at >= COALESCE(:fromDate, c.at)
+            AND c.at <=  COALESCE(:toDate, c.at)
       """)
   Long countByDate(
-      @Param("fromDate") LocalDateTime fromDate,
-      @Param("toDate") LocalDateTime toDate);
+      @Param("fromDateTime") LocalDateTime fromDateTime,
+      @Param("toDateTime") LocalDateTime toDateTime);
 
   @Query("""
           SELECT c FROM Change_log c
@@ -32,8 +32,8 @@ public interface ChangeLogRepository extends JpaRepository<Change_log, Long> {
           AND c.employeeNumber LIKE '%' || COALESCE(:employeeNumber, "") || '%'
           AND c.memo LIKE '%' || COALESCE(:memo, "") || '%'
           AND c.ipAddress LIKE '%' || COALESCE(:ipAddress, "") || '%'
-          AND c.at >= COALESCE(:atFrom, c.at)
-          AND c.at <= COALESCE(:atTo, c.at)
+          AND c.at >= COALESCE(:fromDateTime, c.at)
+          AND c.at <= COALESCE(:toDateTime, c.at)
           AND (:type IS NULL OR c.type = :type)
       """)
   Slice<Change_log> findByCondition(
@@ -41,8 +41,8 @@ public interface ChangeLogRepository extends JpaRepository<Change_log, Long> {
       @Param("type") ChangeLogType type,
       @Param("memo") String memo,
       @Param("ipAddress") String ipAddress,
-      @Param("atFrom") LocalDateTime atFrom,
-      @Param("atTo") LocalDateTime atTo,
+      @Param("fromDateTime") LocalDateTime atFrom,
+      @Param("toDateTime") LocalDateTime atTo,
       @Param("idAfter") Long idAfter,
       Pageable pageable
   );
