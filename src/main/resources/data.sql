@@ -603,3 +603,8 @@ INSERT INTO change_log_diffs (id, log_id, property_name, before, after) VALUES (
 -- INSERT INTO backups (id, worker, started_at, ended_at, status) VALUES (98, '10.0.0.250', '2025-11-05 07:46:01', '2025-02-14 06:00:48', 'IN_PROGRESS');
 -- INSERT INTO backups (id, worker, started_at, ended_at, status) VALUES (99, '10.0.0.86', '2023-03-13 18:16:29', '2025-01-11 16:04:27', 'COMPLETED');
 -- INSERT INTO backups (id, worker, started_at, ended_at, status) VALUES (100, '10.0.0.249', '2023-05-12 01:03:38', '2024-06-05 00:24:19', 'COMPLETED');
+
+SELECT SETVAL(PG_GET_SERIAL_SEQUENCE('departments', 'id'), (SELECT MAX(id) FROM departments));
+SELECT SETVAL(PG_GET_SERIAL_SEQUENCE('employees', 'id'), (SELECT MAX(id) FROM employees));
+SELECT SETVAL(PG_GET_SERIAL_SEQUENCE('change_logs', 'id'), (SELECT MAX(id) FROM change_logs));
+SELECT SETVAL(PG_GET_SERIAL_SEQUENCE('change_log_diffs', 'id'), (SELECT MAX(id) FROM change_log_diffs));
