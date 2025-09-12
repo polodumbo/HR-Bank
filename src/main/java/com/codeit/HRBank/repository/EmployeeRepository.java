@@ -46,7 +46,7 @@ public interface EmployeeRepository extends JpaRepository<Employee,Long> {
     SELECT COUNT(e) FROM Employee e
     WHERE e.hireDate >= COALESCE(:fromDate, e.hireDate)
     AND e.hireDate <= COALESCE(:toDate, e.hireDate)
-    AND e.status = :status
+    AND :status IS NULL OR e.status = :status
 """)
     Long countByCondition(
             @Param("status") EmploymentStatus status,
