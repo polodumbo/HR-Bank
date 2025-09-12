@@ -2,25 +2,15 @@ package com.codeit.HRBank.controller;
 
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.EmploymentStatus;
+import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
 import com.codeit.HRBank.dto.request.EmployeeUpdateRequest;
-<<<<<<< HEAD
-import com.codeit.HRBank.dto.request.FileCreateRequest;
-=======
-import com.codeit.HRBank.dto.response.CursorPageResponseDepartmentDto;
 import com.codeit.HRBank.dto.response.CursorPageResponseEmployeeDto;
->>>>>>> main
 import com.codeit.HRBank.dto.response.EmployeeDetailsResponse;
 import com.codeit.HRBank.dto.response.EmployeeResponse;
-import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
 import com.codeit.HRBank.service.EmployeeService;
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-<<<<<<< HEAD
-import java.util.Optional;
-=======
 import java.time.LocalDateTime;
->>>>>>> main
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -73,63 +63,43 @@ public class EmployeeController {
     return ResponseEntity.ok(updatedEmployee);
   }
 
-<<<<<<< HEAD
   @GetMapping("/{id}")
   public ResponseEntity<EmployeeDetailsResponse> getEmployeeDetails(@PathVariable Long id) {
     EmployeeDetailsResponse response = employeeService.getEmployeeDetailsById(id);
     return ResponseEntity.ok(response);
   }
-=======
-    @PatchMapping("/{id}")
-    public ResponseEntity<EmployeeResponse> updateEmployee(
-        @PathVariable Long id,
-        @RequestBody EmployeeUpdateRequest updateRequest,
-        HttpServletRequest request
-    ) {
-        String ipAddress = request.getRemoteAddr();
-        EmployeeResponse updatedEmployee  = employeeService.updateEmployee(id, updateRequest, ipAddress);
-        return ResponseEntity.ok(updatedEmployee);
-    }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<EmployeeDetailsResponse> getEmployeeDetails(@PathVariable Long id) {
-        EmployeeDetailsResponse response = employeeService.getEmployeeDetailsById(id);
-        return ResponseEntity.ok(response);
-    }
+  @GetMapping
+  public ResponseEntity<CursorPageResponseEmployeeDto> find(
+      @RequestParam(required = false) String nameOrEmail,
+      @RequestParam(required = false) String employeeNumber,
+      @RequestParam(required = false) String departmentName,
+      @RequestParam(required = false) String position,
+      @RequestParam(required = false) LocalDateTime hireDateFrom,
+      @RequestParam(required = false) LocalDateTime hireDateTo,
+      @RequestParam(required = false) EmploymentStatus status,
+      @RequestParam(required = false) Long idAfter,        // 이전 페이지의 마지막 ID
+      @RequestParam(required = false) String cursor,       // 커서(선택)
+      @RequestParam(defaultValue = "10") Integer size,
+      @RequestParam(defaultValue = "name") String sortField,
+      @RequestParam(defaultValue = "asc") String sortDirection
+  ) {
+    CursorPageResponseEmployeeDto response = employeeService.findByCondition(
+        nameOrEmail, employeeNumber, departmentName, position, hireDateFrom, hireDateTo, status,
+        idAfter, cursor, size, sortField, sortDirection);
+    return ResponseEntity.
+        status(HttpStatus.OK).body(response);
+  }
 
-    @GetMapping
-    public ResponseEntity<CursorPageResponseEmployeeDto> find(
-            @RequestParam(required = false) String nameOrEmail,
-            @RequestParam(required = false) String employeeNumber,
-            @RequestParam(required = false) String departmentName,
-            @RequestParam(required = false) String position,
-            @RequestParam(required = false) LocalDateTime hireDateFrom,
-            @RequestParam(required = false) LocalDateTime hireDateTo,
-            @RequestParam(required = false) EmploymentStatus status,
-            @RequestParam(required = false) Long idAfter,        // 이전 페이지의 마지막 ID
-            @RequestParam(required = false) String cursor,       // 커서(선택)
-            @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(defaultValue = "name") String sortField,
-            @RequestParam(defaultValue = "asc") String sortDirection
-    ){
-        CursorPageResponseEmployeeDto response = employeeService.findByCondition(
-                nameOrEmail, employeeNumber, departmentName, position, hireDateFrom, hireDateTo, status, idAfter, cursor, size, sortField, sortDirection);
-        return ResponseEntity.
-                status(HttpStatus.OK).body(response);
-    }
+  @GetMapping("/count")
+  public ResponseEntity<Long> count(
+      @RequestParam(required = false) EmploymentStatus status,
+      @RequestParam(required = false) LocalDateTime fromDate,
+      @RequestParam(required = false) LocalDateTime toDate
 
-    @GetMapping("/count")
-    public ResponseEntity<Long> count(
-            @RequestParam(required = false) EmploymentStatus status,
-            @RequestParam(required = false) LocalDateTime fromDate,
-            @RequestParam(required = false) LocalDateTime toDate
-
-    ){
-        Long response = employeeService.countByCondition(status, fromDate, toDate);
-        return ResponseEntity.
-                status(HttpStatus.OK).body(response);
-    }
-
-
->>>>>>> main
+  ) {
+    Long response = employeeService.countByCondition(status, fromDate, toDate);
+    return ResponseEntity.
+        status(HttpStatus.OK).body(response);
+  }
 }
