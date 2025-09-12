@@ -118,7 +118,7 @@ CREATE TABLE backups
     started_at TIMESTAMPTZ NOT NULL,
     ended_at   TIMESTAMPTZ,
     status     VARCHAR(50) NOT NULL,
-    file_id    BIGINT      NOT NULL
+    file_id    BIGINT
 );
 ALTER TABLE backups
     ADD CONSTRAINT backups_files_id_fk FOREIGN KEY (file_id) REFERENCES files;

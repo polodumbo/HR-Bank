@@ -65,4 +65,5 @@ public class Employee {
   @JoinColumn(name = "profile_image_id",
       foreignKey = @ForeignKey(name = "employees_files_id_fk"), nullable = true)
   private File profileImage;
+
 }

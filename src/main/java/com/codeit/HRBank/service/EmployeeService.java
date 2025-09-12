@@ -11,9 +11,12 @@ import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
 import com.codeit.HRBank.dto.request.EmployeeUpdateRequest;
 import com.codeit.HRBank.dto.request.FileCreateRequest;
 import com.codeit.HRBank.dto.data.FileDto;
+import com.codeit.HRBank.dto.response.CursorPageResponseDepartmentDto;
+import com.codeit.HRBank.dto.response.CursorPageResponseEmployeeDto;
 import com.codeit.HRBank.dto.response.EmployeeDetailsResponse;
 import com.codeit.HRBank.dto.response.EmployeeResponse;
 import com.codeit.HRBank.exception.DuplicateEmailException;
+import com.codeit.HRBank.mapper.EmployeeMapper;
 import com.codeit.HRBank.repository.ChangeLogDiffRepository;
 import com.codeit.HRBank.repository.ChangeLogRepository;
 import com.codeit.HRBank.repository.DepartmentRepository;
@@ -26,8 +29,13 @@ import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.DuplicateJobException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -39,12 +47,12 @@ import java.util.NoSuchElementException;
 @Transactional
 public class EmployeeService {
 
-
   private final EmployeeRepository employeeRepository;
   private final DepartmentRepository departmentRepository;
   private final FileService fileService;
   private final FileRepository fileRepository;
   private final ChangeLogService changeLogService;
+  private final EmployeeMapper employeeMapper;
 
   //직원 등록
   @Transactional
@@ -197,6 +205,44 @@ public class EmployeeService {
         .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
 
     return EmployeeDetailsResponse.from(employee);
+  }
+
+  public CursorPageResponseEmployeeDto findByCondition(
+      String nameOrEmail,
+      String employeeNumber,
+      String departmentName,
+      String position,
+      LocalDateTime hireDateFrom,
+      LocalDateTime hireDateTo,
+      EmploymentStatus status,
+      Long idAfter,        // 이전 페이지의 마지막 ID
+      String cursor,       // 커서(선택)
+      Integer size,
+      String sortField,
+      String sortDirection) {
+
+//        Long idAfter = request.idAfter();
+//        String cursor = request.cursor();
+    size = (size != null && size > 0) ? size : 10;
+    sortField = (sortField != null) ? sortField : "name";
+    sortDirection = (sortDirection != null) ? sortDirection : "ASC";
+    Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+    Sort sort = Sort.by(direction, sortField);
+
+    Pageable pageable = PageRequest.of(0, size, sort);
+
+    Slice<Employee> employeeSlice = employeeRepository.findByCondition(
+        nameOrEmail, employeeNumber, departmentName, position, hireDateFrom, hireDateTo, status,
+        idAfter, pageable
+    );
+
+    return employeeMapper.toDtoSlice(employeeSlice);
+
+  }
+
+  public Long countByCondition(EmploymentStatus status, LocalDateTime fromDate,
+      LocalDateTime toDate) {
+    return employeeRepository.countByCondition(status, fromDate, toDate);
   }
 
 }

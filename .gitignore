@@ -4,6 +4,9 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+# storage 디렉토리만 무시
+.hrbank/storage/
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
