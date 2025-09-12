@@ -3,20 +3,21 @@ package com.codeit.HRBank.service;
 import com.codeit.HRBank.domain.ChangeLogType;
 import com.codeit.HRBank.domain.Change_log;
 import com.codeit.HRBank.dto.data.DiffDto;
+import com.codeit.HRBank.dto.response.CursorPageResponseChangeLogDto;
 import com.codeit.HRBank.repository.ChangeLogDiffRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
-import com.codeit.HRBank.domain.Change_log_diff;
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.dto.data.ChangeLogDto;
 import com.codeit.HRBank.mapper.ChangeLogMapper;
 import com.codeit.HRBank.repository.ChangeLogRepository;
-import com.codeit.HRBank.repository.EmployeeRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,6 +99,36 @@ public class ChangeLogService {
         .map(d -> new DiffDto(d.getPropertyName(), d.getBeforeValue(), d.getAfterValue()))
         .toList();
   }
+
+  @Transactional
+  public CursorPageResponseChangeLogDto findByCondition(
+      String employeeNumber,
+      ChangeLogType type,
+      String memo,
+      String ipAddress,
+      LocalDate atFrom,
+      LocalDate atTo,
+      Long idAfter,
+      String cursor,
+      Integer size,
+      String sortField,
+      String sortDirection) {
+
+    sortField = (sortField != null) ? sortField : "at";
+    sortDirection = (sortDirection != null) ? sortDirection : "desc";
+    Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+    Sort sort = Sort.by(direction, sortField);
+
+    Pageable pageable = PageRequest.of(0, size, sort);
+
+    Slice<Change_log> changeLogSlice = changeLogRepository.findByCondition(
+        employeeNumber, type, memo, ipAddress, atFrom, atTo, idAfter, pageable
+    );
+
+    return changeLogMapper.toDtoSlice(changeLogSlice);
+
+  }
+
 
   public long getChangeLogCount(LocalDate fromDate, LocalDate toDate) {
     return changeLogRepository.countByDate(fromDate, toDate);

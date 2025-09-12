@@ -50,25 +50,25 @@ public class EmployeeService {
   @Transactional
   public Employee registerNewEmployee(EmployeeRegistrationRequest request,
       MultipartFile profileImage) {
-    validateEmail(request.getEmail());
-    Department department = departmentRepository.findByName(request.getDepartmentName())
-        .orElseThrow(
-            () -> new NoSuchElementException(
-                "부서 정보를 찾을 수 없습니다. ID: " + request.getDepartmentName()));
+    validateEmail(request.email());
+
+    Department department = departmentRepository.findById(request.departmentId())
+        .orElseThrow(() -> new NoSuchElementException("부서 정보를 찾을 수 없습니다. ID: " + request.departmentId()));
 
     String employeeNumber = generateEmployeeNumber();
     File profileFile = saveProfileImage(profileImage);
 
     Employee newEmployee = Employee.builder()
-        .name(request.getName())
-        .email(request.getEmail())
+        .name(request.name())
+        .email(request.email())
         .employeeNumber(employeeNumber)
         .department(department)
-        .position(request.getPosition())
-        .hireDate(request.getHireDate())
+        .position(request.position())
+        .hireDate(request.hireDate())
         .status(EmploymentStatus.ACTIVE)
         .profileImage(profileFile)
         .build();
+
     Employee savedEmployee = employeeRepository.save(newEmployee);
     changeLogService.create(newEmployee);
     return savedEmployee;
@@ -153,10 +153,9 @@ public class EmployeeService {
     if (updateRequest.getEmail() != null) {
       employee.setEmail(updateRequest.getEmail());
     }
-    if (updateRequest.getDepartmentName() != null) {
-      Department department = departmentRepository.findByName(updateRequest.getDepartmentName())
-          .orElseThrow(() -> new NoSuchElementException(
-              "부서를 찾을 수 없습니다. ID: " + updateRequest.getDepartmentName()));
+    if (updateRequest.getDepartmentId() != null) {
+      Department department = departmentRepository.findByName(updateRequest.getDepartmentId())
+          .orElseThrow(() -> new NoSuchElementException("부서를 찾을 수 없습니다. ID: " + updateRequest.getDepartmentId()));
       employee.setDepartment(department);
     }
     if (updateRequest.getPosition() != null) {
