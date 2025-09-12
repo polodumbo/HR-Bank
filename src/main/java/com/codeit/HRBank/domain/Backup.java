@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -46,11 +47,11 @@ public class Backup {
 
     @CreatedDate
     @Column(name = "started_at", columnDefinition = "timestamp with time zone", updatable = false, nullable = false)
-    private LocalDateTime startedAt;
+    private LocalDate startedAt;
 
 //    @LastModifiedDate
     @Column(columnDefinition = "timestamp with time zone", name = "ended_at")
-    private LocalDateTime endedAt;
+    private LocalDate endedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
