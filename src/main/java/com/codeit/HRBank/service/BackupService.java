@@ -129,7 +129,7 @@ public class BackupService {
           backup.setStatus(BackupStatus.COMPLETED);
           backup.setEndedAt(LocalDateTime.now());
           backupRepository.save(backup);
-          fileStorage.put(file.getId(), csvBytes, "/backup/");
+          fileStorage.put(file.getId(), csvBytes);
 
           log.info("자동 백업 작업이 완료되었습니다. 파일 정보 ID: {}", file.getId());
 

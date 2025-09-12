@@ -21,7 +21,7 @@ public class FileService {
   private final FileStorage FileStorage;
 
   @Transactional
-  public FileDto create(FileCreateRequest request, String path) {
+  public FileDto create(FileCreateRequest request ) {
     String fileName = request.fileName();
     byte[] bytes = request.bytes();
     String contentType = request.contentType();
@@ -31,7 +31,7 @@ public class FileService {
         (long) bytes.length
     );
     FileRepository.save(file);
-    FileStorage.put(file.getId(), bytes, path);
+    FileStorage.put(file.getId(), bytes);
 
     return fileMapper.toDto(file);
   }
@@ -44,11 +44,11 @@ public class FileService {
   }
 
   @Transactional
-  public void delete(Long fileId, String path) {
+  public void delete(Long fileId ) {
     if (!FileRepository.existsById(fileId)) {
       throw new NoSuchElementException("File with id" + fileId + " not found");
     }
     FileRepository.deleteById(fileId);
-    FileStorage.delete(fileId, path);
+    FileStorage.delete(fileId);
   }
 }

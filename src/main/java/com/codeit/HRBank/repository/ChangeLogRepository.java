@@ -3,6 +3,7 @@ package com.codeit.HRBank.repository;
 import com.codeit.HRBank.domain.ChangeLogType;
 import com.codeit.HRBank.domain.Change_log;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -22,8 +23,8 @@ public interface ChangeLogRepository extends JpaRepository<Change_log, Long> {
             AND (c.at <  :toDate)
       """)
   Long countByDate(
-      @Param("fromDate") LocalDate fromDate,
-      @Param("toDate") LocalDate toDate);
+      @Param("fromDate") LocalDateTime fromDate,
+      @Param("toDate") LocalDateTime toDate);
 
   @Query("""
           SELECT c FROM Change_log c
@@ -40,8 +41,8 @@ public interface ChangeLogRepository extends JpaRepository<Change_log, Long> {
       @Param("type") ChangeLogType type,
       @Param("memo") String memo,
       @Param("ipAddress") String ipAddress,
-      @Param("atFrom") LocalDate atFrom,
-      @Param("atTo") LocalDate atTo,
+      @Param("atFrom") LocalDateTime atFrom,
+      @Param("atTo") LocalDateTime atTo,
       @Param("idAfter") Long idAfter,
       Pageable pageable
   );

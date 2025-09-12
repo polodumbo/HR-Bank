@@ -49,7 +49,7 @@ public class BackupController {
     public ResponseEntity<?> download(@PathVariable("id") Long id){
         File file = fileRepository.findById(id).get();
         FileDto dto = new FileDto(file.getId(), file.getFileName(), file.getSize(), file.getContentType());
-        return fileStorage.download(dto, "/backup");
+        return fileStorage.download(dto);
     }
     /*
     - **{작업자}**, **{시작 시간}**, **{상태}**로 이력 목록을 조회할 수 있습니다.

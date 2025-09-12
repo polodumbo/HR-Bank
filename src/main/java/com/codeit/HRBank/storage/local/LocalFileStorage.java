@@ -43,8 +43,8 @@ public class LocalFileStorage implements FileStorage {
     }
 
     @Override
-    public Long put(Long fileId, byte[] bytes, String path) {
-        Path filePath = resolvePath(fileId, path);
+    public Long put(Long fileId, byte[] bytes ) {
+        Path filePath = resolvePath(fileId);
         if (Files.exists(filePath)) {
             throw new IllegalArgumentException("File already exists!");
         }
@@ -68,8 +68,8 @@ public class LocalFileStorage implements FileStorage {
     }
 
     @Override
-    public InputStream get(Long fileId, String path) {
-        Path filePath = resolvePath(fileId, path);
+    public InputStream get(Long fileId) {
+        Path filePath = resolvePath(fileId);
         if (Files.notExists(filePath)) {
             throw new NoSuchElementException("File with key " + fileId + " does not exist");
         }
@@ -81,13 +81,13 @@ public class LocalFileStorage implements FileStorage {
         }
     }
 
-    private Path resolvePath(Long fileId, String path) {
-        return root.resolve(path + fileId.toString());
+    private Path resolvePath(Long fileId ) {
+        return root.resolve( fileId.toString());
     }
 
     @Override
-    public ResponseEntity<Resource> download(FileDto metaData, String path) {
-        InputStream inputStream = get(metaData.id(), path);
+    public ResponseEntity<Resource> download(FileDto metaData ) {
+        InputStream inputStream = get(metaData.id());
         Resource resource = new InputStreamResource(inputStream);
 
         return ResponseEntity
@@ -100,8 +100,8 @@ public class LocalFileStorage implements FileStorage {
     }
 
     @Override
-    public void delete(Long fileId, String path) {
-        Path filePath = resolvePath(fileId, path);
+    public void delete(Long fileId ) {
+        Path filePath = resolvePath(fileId);
         if (Files.notExists(filePath)) {
             throw new NoSuchElementException("File" + fileId + "not found");
         }
