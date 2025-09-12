@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -70,7 +71,7 @@ public class BackupService {
             if (employees.isEmpty()) {
                 log.warn("백업할 직원 데이터가 없습니다.");
                 backup.setStatus(BackupStatus.SKIPPED);
-                backup.setEndedAt(LocalDateTime.now());
+                backup.setEndedAt(LocalDate.now());
                 backup = backupRepository.save(backup);
                 log.info("3333333333");
                 return backupMapper.toDto(backup);
@@ -79,7 +80,7 @@ public class BackupService {
 
             if(!checkBackupProcess()){
                 backup.setStatus(BackupStatus.SKIPPED);
-                backup.setEndedAt(LocalDateTime.now());
+                backup.setEndedAt(LocalDate.now());
                 backup = backupRepository.save(backup);
                 backup = backupRepository.save(backup);
                 log.info("44444444");
@@ -90,7 +91,7 @@ public class BackupService {
 
             // CSV 파일 생성 및 바이트 배열 추출
             byte[] csvBytes;
-            String fileName = "employees-backup-" + LocalDateTime.now()
+            String fileName = "employees-backup-" + LocalDate.now()
                     .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".csv";
             String filePath = "backups/" + fileName;
 
@@ -132,7 +133,7 @@ public class BackupService {
                 // 백업 이력 업데이트
                 backup.setFile(file);
                 backup.setStatus(BackupStatus.COMPLETED);
-                backup.setEndedAt(LocalDateTime.now());
+                backup.setEndedAt(LocalDate.now());
                 backupRepository.save(backup);
                 fileStorage.put(file.getId(), csvBytes);
 
@@ -141,7 +142,7 @@ public class BackupService {
             } catch (IOException e) {
                 log.error("CSV 파일 생성 중 오류가 발생했습니다.", e);
                 backup.setStatus(BackupStatus.FAILED);
-                backup.setEndedAt(LocalDateTime.now());
+                backup.setEndedAt(LocalDate.now());
                 backup.setFile(null);
                 backupRepository.save(backup);
                 return backupMapper.toDto(backup);
@@ -151,7 +152,7 @@ public class BackupService {
         } catch (Exception e) {
             log.error("자동 백업 작업 중 예상치 못한 오류가 발생했습니다.", e);
             backup.setStatus(BackupStatus.FAILED);
-            backup.setEndedAt(LocalDateTime.now());
+            backup.setEndedAt(LocalDate.now());
             backup.setFile(null);
             backupRepository.save(backup);
         }
@@ -163,8 +164,8 @@ public class BackupService {
     @Transactional
     public CursorPageResponseBackupDto findByCondition(BackupFindRequest request) {
         String worker = request.worker();
-        LocalDateTime startedAtFrom = request.startedAtFrom();
-        LocalDateTime startedAtTo = request.startedAtTo();
+        LocalDate startedAtFrom = request.startedAtFrom();
+        LocalDate startedAtTo = request.startedAtTo();
         BackupStatus status = request.status();
 
         Long idAfter = request.idAfter();
@@ -205,7 +206,7 @@ public class BackupService {
     Boolean checkBackupProcess() {
 
         // 1. 마지막으로 'COMPLETED'된 백업의 시작 시간을 가져옴
-        LocalDateTime lastBackupTime = null;
+        LocalDate lastBackupTime = null;
         Backup lastCompletedBackup = backupRepository.findLatest(BackupStatus.COMPLETED);
 
 
@@ -221,7 +222,7 @@ public class BackupService {
 
         // 3. 마지막 백업 시간과 최근 변경 이력 시간 비교
         if (latestChangeLog.isPresent()) {
-            LocalDateTime latestChangeTime = latestChangeLog.get().getAt();
+            LocalDate latestChangeTime = LocalDate.from(latestChangeLog.get().getAt());
             log.info("마지막 로그 시간: {}", latestChangeTime);
 
             if(latestChangeTime.isBefore(lastBackupTime)) {

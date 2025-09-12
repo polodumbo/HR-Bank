@@ -4,6 +4,7 @@ import com.codeit.HRBank.domain.Backup;
 
 import com.codeit.HRBank.domain.BackupStatus;
 import com.codeit.HRBank.dto.data.BackupDto;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -40,8 +41,8 @@ public interface BackupRepository extends JpaRepository<Backup, Long> {
             """)
     Slice<Backup> findByCondition(
             @Param("worker") String worker,
-            @Param("startedAtFrom") LocalDateTime startedAtFrom,
-            @Param("startedAtTo") LocalDateTime startedAtTo,
+            @Param("startedAtFrom") LocalDate startedAtFrom,
+            @Param("startedAtTo") LocalDate startedAtTo,
             @Param("status") BackupStatus status,
             @Param("idAfter") Long idAfter,
             Pageable pageable
