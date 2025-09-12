@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -35,5 +36,5 @@ public class Department {
     private String description;
 
     @Column(name = "established_date", nullable = false)
-    private LocalDateTime establishedDate;
+    private LocalDate establishedDate;
 }
