@@ -1,4 +1,4 @@
-CREATE DATABASE hrbank ENCODING = 'UTF8';
+-- CREATE DATABASE hrbank ENCODING = 'UTF8';
 
 DROP TABLE IF EXISTS departments CASCADE;
 DROP TABLE IF EXISTS files CASCADE;
@@ -78,12 +78,12 @@ CREATE TABLE change_logs
     ip_address      VARCHAR(50) NOT NULL,
     at              TIMESTAMPTZ NOT NULL
 );
-ALTER TABLE change_logs
-    --ADD CONSTRAINT change_logs_employees_emp_no_fk FOREIGN KEY (employee_number) REFERENCES employees (employee_number);
-    ADD CONSTRAINT change_logs_employees_emp_no_fk
-    FOREIGN KEY (employee_number)
-    REFERENCES employees (employee_number)
-    ON DELETE SET NULL;
+-- ALTER TABLE change_logs
+--     ADD CONSTRAINT change_logs_employees_emp_no_fk FOREIGN KEY (employee_number) REFERENCES employees (employee_number);
+--     ADD CONSTRAINT change_logs_employees_emp_no_fk
+--     FOREIGN KEY (employee_number)
+--     REFERENCES employees (employee_number)
+--     ON DELETE SET NULL;
 COMMENT ON TABLE change_logs IS '직원 정보 수정 이력';
 COMMENT ON COLUMN change_logs.id IS '아이디';
 COMMENT ON COLUMN change_logs.type IS '유형(추가/수정/삭제)'; -- CREATED, UPDATED, DELETED
@@ -120,7 +120,7 @@ CREATE TABLE backups
     started_at TIMESTAMPTZ NOT NULL,
     ended_at   TIMESTAMPTZ,
     status     VARCHAR(50) NOT NULL,
-    file_id    BIGINT      NOT NULL
+    file_id    BIGINT
 );
 ALTER TABLE backups
     ADD CONSTRAINT backups_files_id_fk FOREIGN KEY (file_id) REFERENCES files;
