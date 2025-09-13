@@ -16,8 +16,10 @@ import com.codeit.HRBank.dto.response.EmployeeResponse;
 import com.codeit.HRBank.exception.DuplicateEmailException;
 import com.codeit.HRBank.mapper.EmployeeMapper;
 import com.codeit.HRBank.repository.DepartmentRepository;
+import com.codeit.HRBank.repository.EmployeeQueryRepository;
 import com.codeit.HRBank.repository.EmployeeRepository;
 import com.codeit.HRBank.repository.FileRepository;
+import com.querydsl.core.Tuple;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -45,6 +47,7 @@ import java.util.NoSuchElementException;
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final EmployeeQueryRepository employeeQueryRepository;
     private final DepartmentRepository departmentRepository;
     private final FileService fileService;
     private final FileRepository fileRepository;
@@ -89,9 +92,33 @@ public class EmployeeService {
 
 
     private String generateEmployeeNumber() {
-        String prefix = "EMP-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        Long count = employeeRepository.countByEmployeeNumberStartingWith(prefix);
-        return String.format("%s-%03d", prefix, count + 1);
+        String prefix = "EMP-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-%";
+        Optional<String> lastEmployeeNumber = employeeRepository.findLastEmployeeNumberStartingWith(prefix);
+
+        String newEmployeeNumber;
+        if (lastEmployeeNumber.isPresent()) {
+            // 가장 최근 번호가 있다면, 그 번호에 1을 더해 새 번호 생성
+            // (이 로직은 동시성 문제를 고려해야 합니다.)
+            newEmployeeNumber = generateNextNumber(lastEmployeeNumber.get());
+        } else {
+            // 없다면 첫 번째 번호 생성
+            newEmployeeNumber = "EMP-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-001";
+        }
+        return newEmployeeNumber;
+    }
+    public String generateNextNumber(String lastNumber) {
+        // 1. "EMP-2025-09-005"에서 "005" 부분을 추출
+        String prefix = lastNumber.substring(0, lastNumber.lastIndexOf('-') + 1);
+        String numberPart = lastNumber.substring(lastNumber.lastIndexOf('-') + 1);
+
+        // 2. 숫자를 Long으로 변환하고 1을 더함
+        long number = Long.parseLong(numberPart) + 1;
+
+        // 3. 다시 "006"과 같이 세 자리 숫자로 포맷팅
+        String nextNumber = String.format("%03d", number);
+
+        // 4. 접두사와 합쳐서 최종 사원 번호 생성
+        return prefix + nextNumber;
     }
 
     private File saveProfileImage(MultipartFile profileImage) {
@@ -251,9 +278,9 @@ public class EmployeeService {
     }
 
     public List<EmployeeTrendDto> getTrend(
-    LocalDate from,
-    LocalDate to,
-    String unit
+            LocalDate from,
+            LocalDate to,
+            String unit
     ) {
         String finalUnit = Optional.ofNullable(unit).orElse("month").toLowerCase();
         ChronoUnit chronoUnit = getChronoUnit(finalUnit);
@@ -264,50 +291,47 @@ public class EmployeeService {
         LocalDate finalTo = Optional.ofNullable(to)
                 .orElse(LocalDate.now());
 
-        List<Object[]> queryResult;
-        switch (finalUnit) {
-            case "day":
-                queryResult = employeeRepository.getTrendByDay(finalFrom, finalTo);
-                break;
-            case "week":
-                queryResult = employeeRepository.getTrendByWeek(finalFrom, finalTo);
-                break;
-            case "month":
-                queryResult = employeeRepository.getTrendByMonth(finalFrom, finalTo);
-                break;
-            case "quarter":
-                queryResult = employeeRepository.getTrendByQuarter(finalFrom, finalTo);
-                break;
-            case "year":
-                queryResult = employeeRepository.getTrendByYear(finalFrom, finalTo);
-                break;
-            default:
-                throw new IllegalArgumentException("지원하지 않는 시간 단위입니다: " + unit);
-        }
-
+        List<Tuple> queryResult = employeeQueryRepository.getEmployeeTrend(finalFrom, finalTo, finalUnit);
         List<EmployeeTrendDto> trendList = new ArrayList<>();
-        Long previousCount = null;
+        Long previousTotalCount = 0L; // 이전 시점의 누적 직원 수
+        Long currentTotalCount = 0L; // 현재 시점의 누적 직원 수
 
-        for (Object[] row : queryResult) {
-            log.info("로그로그: {}",row[0].toString());
-            String dateString =  (String) row[0];
-            LocalDate date = LocalDate.parse(dateString.substring(0, 10));
-            Long currentCount = ((Number) row[1]).longValue();
+        for (Tuple tuple : queryResult) {
+            LocalDate date = tuple.get(0, LocalDate.class);
+            Long newHiresInPeriod = tuple.get(1, Long.class); // 해당 기간에 추가된 직원 수
+
             Long change = 0L;
             double changeRate = 0.0;
 
-            if (previousCount != null) {
-                change = currentCount - previousCount;
-                if (previousCount > 0) {
-                    changeRate = (double) change / previousCount * 100.0;
-                }
+            // 현재 시점의 누적 직원 수를 계산
+            currentTotalCount += newHiresInPeriod;
+
+            // 첫 번째 데이터가 아닐 때만 증감 및 증감률 계산
+            if (previousTotalCount > 0) {
+                change = currentTotalCount - previousTotalCount;
+                changeRate = (double) change / previousTotalCount * 100.0;
             }
 
-            trendList.add(new EmployeeTrendDto(date, currentCount, change, changeRate));
-            previousCount = currentCount;
+            // 첫 번째 데이터일 때도 change는 newHiresInPeriod와 동일
+            if(previousTotalCount == 0) {
+                change = newHiresInPeriod;
+                if(change > 0) changeRate = 100.0;
+            }
+
+            trendList.add(
+                    new EmployeeTrendDto(
+                            date,
+                            currentTotalCount, // DTO의 count는 누적 직원 수
+                            change,
+                            changeRate
+                    )
+            );
+
+            previousTotalCount = currentTotalCount;
         }
 
         return trendList;
+
     }
 
     private ChronoUnit getChronoUnit(String unit) {
