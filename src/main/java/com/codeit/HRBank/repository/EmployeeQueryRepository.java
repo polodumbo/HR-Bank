@@ -2,6 +2,7 @@ package com.codeit.HRBank.repository;
 
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.QChange_log;
+import com.codeit.HRBank.domain.QChange_log_diff;
 import com.codeit.HRBank.domain.QEmployee;
 import com.codeit.HRBank.dto.data.EmployeeTrendDto;
 import com.querydsl.core.Tuple;
@@ -13,6 +14,7 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,9 +26,10 @@ import org.springframework.stereotype.Repository;
 public class EmployeeQueryRepository {
     private final JPAQueryFactory queryFactory; //Querydsl쿼리를 생성하고 실행하는 핵심객체
     private static final QEmployee employee = QEmployee.employee; // <-- QEmployee 인스턴스 사용 employees 테이블의 각 컬럼에 접근가능
-    private static final QChange_log changeLog = QChange_log.change_log; // <-- QEmployee 인스턴스 사용 employees 테이블의 각 컬럼에 접근가능
+    private static final QChange_log changeLog = QChange_log.change_log;
+    private static final QChange_log_diff changeLogDiff = QChange_log_diff.change_log_diff;
 
-    public List<Tuple> getEmployeeTrend(LocalDate from, LocalDate to, String unit) {
+    public List<Tuple> getHiredTrend(LocalDate from, LocalDate to, String unit) {
         //format : SQL함수 템플릿을 만듦
         //DATE_TRUNC : PostgreSQL에 사용되는 함수로, 날짜/시간 값을 특정단위(month, year등)의 시작시점으로 잘라내는 역할
         String dateTruncFormat = String.format("DATE_TRUNC('%s', {0})", unit);
@@ -48,10 +51,44 @@ public class EmployeeQueryRepository {
                 .from(employee)
                 .where(hireDatePath.between(from, to))  //기간설정
                 .groupBy(hireDateExpression)        //기간으로 그룹화
-                .having()
                 .orderBy(hireDateExpression.asc())  //
                 .fetch();
 
         return results;
     }
+
+    public List<Tuple> getResignedTrend(LocalDate from, LocalDate to, String unit) {
+        //format : SQL함수 템플릿을 만듦
+        //DATE_TRUNC : PostgreSQL에 사용되는 함수로, 날짜/시간 값을 특정단위(month, year등)의 시작시점으로 잘라내는 역할
+        String dateTruncFormat = String.format("DATE_TRUNC('%s', {0})", unit);
+
+        // QChangLog at 필드를 사용
+        DatePath<LocalDateTime> resignedDatePath = Expressions.datePath(
+                LocalDateTime.class,
+                changeLog.at.getMetadata().getName()
+        );
+        //hireDate 를 DATE_TRUNC 를 사용해 날짜 단위로 쪼개라는 SQL표현식을 만듦
+        StringTemplate resignedDateExpression = Expressions.stringTemplate(
+                dateTruncFormat,
+                resignedDatePath // <-- QEmployee 필드 전달
+        );
+
+        return queryFactory
+                .select(
+                        resignedDateExpression.as("date"),  //쪼갠날짜단위
+                        changeLog.id.countDistinct().as("count") //COUNT(id)
+                )
+                .from(changeLogDiff)
+                .innerJoin(changeLogDiff.log, changeLog) // <-- diffs.log를 통해 changeLog와 조인
+                .where(
+                        resignedDatePath.between(from.atStartOfDay(), to.atTime(23, 59, 59)),
+//                        changeLog.at.between(from.atStartOfDay(), to.atTime(23, 59, 59)),
+                        changeLogDiff.propertyName.eq("status"),
+                        changeLogDiff.afterValue.eq("RESIGNED")
+                )  //기간설정
+                .groupBy(resignedDateExpression)        //기간으로 그룹화
+                .orderBy(resignedDateExpression.asc())  //
+                .fetch();
+    }
+
 }
