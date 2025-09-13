@@ -341,25 +341,27 @@ public class EmployeeService {
     }
 
     public List<EmployeeDistributionDto> getDistribution(String groupBy, EmploymentStatus status) {
-        List<Object[]> queryResult;
+        String finalGroupBy = Optional.ofNullable(groupBy).orElse("department");
+        EmploymentStatus finalStatus = Optional.ofNullable(status).orElse(EmploymentStatus.ACTIVE);
 
-        if ("department".equalsIgnoreCase(groupBy)) {
-            queryResult = employeeRepository.getDistributionByDepartment(status);
-        } else {
-            // 기본값은 'position'으로 설정
-            queryResult = employeeRepository.getDistributionByPosition(status);
-        }
+        // 1. 전체 직원 수를 별도의 쿼리로 조회
+        Long totalEmployees = employeeQueryRepository.countByStatus(finalStatus);
 
-        // 쿼리 결과를 DTO로 변환
-        return queryResult.stream()
-                .map(row -> new EmployeeDistributionDto(
-                        (String) row[0],
-                        ((Number) row[1]).longValue(),
-                        (Double) row[2]
-                ))
+        // 2. 그룹별 직원 수를 튜플로 조회
+        List<Tuple> distributionTuples = employeeQueryRepository.getDistributionTuple(finalGroupBy, finalStatus);
+
+        // 3. 튜플을 DTO로 변환하며 퍼센티지 계산
+        return distributionTuples.stream()
+                .map(tuple -> {
+                    String groupKey = tuple.get(0, String.class);
+                    Long count = tuple.get(1, Long.class);
+                    double percentage = (double) count / totalEmployees * 100.0;
+
+                    return new EmployeeDistributionDto(groupKey, count, percentage);
+                })
                 .collect(Collectors.toList());
-
-
     }
+
+
 
 }

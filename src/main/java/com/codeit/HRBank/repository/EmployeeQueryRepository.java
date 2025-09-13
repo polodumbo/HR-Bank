@@ -1,16 +1,21 @@
 package com.codeit.HRBank.repository;
 
 import com.codeit.HRBank.domain.Employee;
+import com.codeit.HRBank.domain.EmploymentStatus;
 import com.codeit.HRBank.domain.QChange_log;
 import com.codeit.HRBank.domain.QChange_log_diff;
+import com.codeit.HRBank.domain.QDepartment;
 import com.codeit.HRBank.domain.QEmployee;
+import com.codeit.HRBank.dto.data.EmployeeDistributionDto;
 import com.codeit.HRBank.dto.data.EmployeeTrendDto;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.DatePath;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
@@ -28,6 +33,40 @@ public class EmployeeQueryRepository {
     private static final QEmployee employee = QEmployee.employee; // <-- QEmployee 인스턴스 사용 employees 테이블의 각 컬럼에 접근가능
     private static final QChange_log changeLog = QChange_log.change_log;
     private static final QChange_log_diff changeLogDiff = QChange_log_diff.change_log_diff;
+    private static final QDepartment department = QDepartment.department;
+
+
+    public List<Tuple> getDistributionTuple(String groupBy, EmploymentStatus status) {
+        StringExpression groupByKey;
+        if ("department".equalsIgnoreCase(groupBy)) {
+            groupByKey = department.name;
+        } else if ("position".equalsIgnoreCase(groupBy)) {
+            groupByKey = employee.position;
+        } else {
+            groupByKey = department.name; // 기본값
+        }
+
+        return queryFactory
+                .select(
+                        groupByKey,
+                        employee.id.countDistinct()
+                )
+                .from(employee)
+                .leftJoin(employee.department, department)
+                .where(employee.status.eq(status))
+                .groupBy(groupByKey)
+                .orderBy(employee.id.countDistinct().desc())
+                .fetch();
+    }
+    // 전체 직원 수를 세는 쿼리 메서드 (레포지토리에도 추가해야 함)
+    // 이 메서드는 EmployeeQueryRepository에 추가되어야 합니다.
+    public Long countByStatus(EmploymentStatus status) {
+        return queryFactory
+                .select(employee.id.countDistinct())
+                .from(employee)
+                .where(employee.status.eq(status))
+                .fetchOne();
+    }
 
     public List<Tuple> getHiredTrend(LocalDate from, LocalDate to, String unit) {
         //format : SQL함수 템플릿을 만듦
