@@ -5,8 +5,10 @@ import com.codeit.HRBank.domain.Change_log;
 import com.codeit.HRBank.dto.data.DiffDto;
 import com.codeit.HRBank.dto.response.CursorPageResponseChangeLogDto;
 import com.codeit.HRBank.repository.ChangeLogDiffRepository;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.NoSuchElementException;
 import com.codeit.HRBank.domain.Employee;
@@ -15,6 +17,7 @@ import com.codeit.HRBank.mapper.ChangeLogMapper;
 import com.codeit.HRBank.repository.ChangeLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChangeLogService {
@@ -32,6 +36,8 @@ public class ChangeLogService {
     private final ChangeLogMapper changeLogMapper;
     private final ChangeLogDiffService changeLogDiffService;
     private final ChangeLogDiffRepository changeLogDiffRepository;
+
+
 
     public String getClientIpAddress() {
         String ipAddress = request.getHeader("X-Forwarded-For");
@@ -107,8 +113,8 @@ public class ChangeLogService {
             ChangeLogType type,
             String memo,
             String ipAddress,
-            LocalDateTime atFrom,
-            LocalDateTime atTo,
+            Instant atFrom,
+            Instant atTo,
             Long idAfter,
             String cursor,
             Integer size,
@@ -122,8 +128,25 @@ public class ChangeLogService {
 
         Pageable pageable = PageRequest.of(0, size, sort);
 
+        ZoneId kstZoneId = ZoneId.of("Asia/Seoul");
+        LocalDateTime fromDateTime;
+        LocalDateTime toDateTime;
+        if (atFrom != null) {
+            fromDateTime = LocalDateTime.ofInstant(atFrom, kstZoneId);
+        } else {
+            fromDateTime = LocalDateTime.now().minusDays(7);
+        }
+
+        if (atTo != null) {
+            toDateTime = LocalDateTime.ofInstant(atTo, kstZoneId);
+        } else {
+            toDateTime = LocalDateTime.now();
+        }
+
+        // 기본값 설정: fromDate = 7일 전, toDate = 현재
+
         Slice<Change_log> changeLogSlice = changeLogRepository.findByCondition(
-                employeeNumber, type, memo, ipAddress, atFrom, atTo, idAfter, pageable
+                employeeNumber, type, memo, ipAddress, fromDateTime, toDateTime, idAfter, pageable
         );
 
         return changeLogMapper.toDtoSlice(changeLogSlice);
@@ -131,8 +154,28 @@ public class ChangeLogService {
     }
 
 
-    public long getChangeLogCount(LocalDateTime fromDate, LocalDateTime toDate) {
-        return changeLogRepository.countByDate(fromDate, toDate);
+    public long getChangeLogCount(Instant fromDate, Instant toDate) {
+
+        ZoneId kstZoneId = ZoneId.of("Asia/Seoul");
+        LocalDateTime fromDateTime;
+        LocalDateTime toDateTime;
+
+        log.info("fromDate : {}", fromDate);
+        if (fromDate != null) {
+            fromDateTime = LocalDateTime.ofInstant(fromDate, kstZoneId);
+        } else {
+            fromDateTime = LocalDateTime.now().minusDays(7);
+        }
+
+        if (toDate != null) {
+            toDateTime = LocalDateTime.ofInstant(toDate, kstZoneId);
+        } else {
+            toDateTime = LocalDateTime.now();
+        }
+        log.info("fromDate : {}", fromDateTime);
+        log.info("toDate : {}", toDateTime);
+
+        return changeLogRepository.countByDate(fromDateTime, toDateTime);
     }
 
 }

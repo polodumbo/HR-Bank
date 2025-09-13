@@ -2,6 +2,7 @@ package com.codeit.HRBank.controller;
 
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.EmploymentStatus;
+import com.codeit.HRBank.dto.data.EmployeeDistributionDto;
 import com.codeit.HRBank.dto.data.EmployeeTrendDto;
 import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
 import com.codeit.HRBank.dto.request.EmployeeUpdateRequest;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/employees")
 @RequiredArgsConstructor
@@ -109,13 +112,27 @@ public class EmployeeController {
 
     @GetMapping("/stats/trend")
     public ResponseEntity<List<EmployeeTrendDto>> getTrend(
-            @RequestParam LocalDate from,
-            @RequestParam LocalDate to,
+            @RequestParam(required = false) LocalDate from,
+            @RequestParam(required = false) LocalDate to,
             @RequestParam(defaultValue = "month") String unit
     ){
 
         List<EmployeeTrendDto> response = employeeService.getTrend(from, to, unit);
         return ResponseEntity.
                 status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/stats/distribution")
+    public ResponseEntity<List<EmployeeDistributionDto>> getDistribution(
+            @RequestParam(defaultValue = "department") String groupBy,
+            @RequestParam(defaultValue = "ACTIVE") EmploymentStatus status
+    ){
+      log.info("groupBy : {}", groupBy);
+      log.info("status : {}", status);
+        List<EmployeeDistributionDto> response = employeeService.getDistribution(groupBy, status);
+        log.info("999 : {}", response.get(0));
+        return ResponseEntity.
+                status(HttpStatus.OK).body(response);
+
     }
 }
