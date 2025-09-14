@@ -187,7 +187,12 @@ public class BackupService {
 
   @Transactional
   public BackupDto findLatest(BackupStatus status) {
-    Backup backup = backupRepository.findLatest(status);
+    Backup backup = backupRepository.findLatest(status).orElse(null); // 결과가 없으면 null을 반환
+
+      // backup이 null일 경우 DTO 변환을 시도하지 않고 null을 반환
+      if (backup == null) {
+          return null;
+      };
     return backupMapper.toDto(backup);
   }
 
@@ -203,7 +208,7 @@ public class BackupService {
 
     // 1. 마지막으로 'COMPLETED'된 백업의 시작 시간을 가져옴
     LocalDateTime lastBackupTime = null;
-    Backup lastCompletedBackup = backupRepository.findLatest(BackupStatus.COMPLETED);
+    Backup lastCompletedBackup = backupRepository.findLatest(BackupStatus.COMPLETED).orElse(null);
 
     if (lastCompletedBackup == null) {
       return true;
