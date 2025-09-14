@@ -21,9 +21,11 @@ import com.codeit.HRBank.repository.EmployeeRepository;
 import com.codeit.HRBank.repository.FileRepository;
 import com.querydsl.core.Tuple;
 import jakarta.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -285,49 +287,42 @@ public class EmployeeService {
         String finalUnit = Optional.ofNullable(unit).orElse("month").toLowerCase();
         ChronoUnit chronoUnit = getChronoUnit(finalUnit);
 
-        LocalDate finalFrom = Optional.ofNullable(from)
-                .orElse(LocalDate.now().minus(12, chronoUnit));
+        LocalDate finalFrom = Optional.ofNullable(from).orElse(LocalDate.now().minus(12, chronoUnit));
+        LocalDate finalTo = Optional.ofNullable(to).orElse(LocalDate.now());
 
-        LocalDate finalTo = Optional.ofNullable(to)
-                .orElse(LocalDate.now());
+        // 1. 입사자 수 조회 및 맵으로 변환
+        List<Tuple> hiredResult = employeeQueryRepository.getHiredTrend(finalFrom, finalTo, finalUnit);
+        Map<LocalDate, Long> hiredMap = hiredResult.stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(0, LocalDate.class),
+                        tuple -> tuple.get(1, Long.class)
+                ));
+        log.info("로그로그hiredResult: {}",hiredResult.get(0).toString());
 
-        List<Tuple> queryResult = employeeQueryRepository.getEmployeeTrend(finalFrom, finalTo, finalUnit);
+        log.info("final from to {}, {}", finalFrom, finalTo);
+        // 2. 퇴사자 수 조회 및 맵으로 변환
+        List<Tuple> resignedResult = employeeQueryRepository.getResignedTrend(finalFrom, finalTo, finalUnit);
+        Map<LocalDate, Long> resignedMap = resignedResult.stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(0, LocalDateTime.class).toLocalDate(),
+                        tuple -> tuple.get(1, Long.class)
+                ));
+        log.info("로그로그resignedResult: {}",resignedResult.get(0).toString());
+
+
         List<EmployeeTrendDto> trendList = new ArrayList<>();
-        Long previousTotalCount = 0L; // 이전 시점의 누적 직원 수
-        Long currentTotalCount = 0L; // 현재 시점의 누적 직원 수
+        Long previousTotalCount = 0L;
 
-        for (Tuple tuple : queryResult) {
-            LocalDate date = tuple.get(0, LocalDate.class);
-            Long newHiresInPeriod = tuple.get(1, Long.class); // 해당 기간에 추가된 직원 수
+        for (LocalDate date = finalFrom; !date.isAfter(finalTo); date = date.plus(1, chronoUnit)) {
+            Long hiredCount = hiredMap.getOrDefault(date, 0L);
+            Long resignedCount = resignedMap.getOrDefault(date, 0L);
 
-            Long change = 0L;
-            double changeRate = 0.0;
+            Long totalCount = previousTotalCount + hiredCount - resignedCount;
+            Long change = hiredCount - resignedCount;
+            double changeRate = previousTotalCount > 0 ? (double) change / previousTotalCount * 100.0 : 0.0;
 
-            // 현재 시점의 누적 직원 수를 계산
-            currentTotalCount += newHiresInPeriod;
-
-            // 첫 번째 데이터가 아닐 때만 증감 및 증감률 계산
-            if (previousTotalCount > 0) {
-                change = currentTotalCount - previousTotalCount;
-                changeRate = (double) change / previousTotalCount * 100.0;
-            }
-
-            // 첫 번째 데이터일 때도 change는 newHiresInPeriod와 동일
-            if(previousTotalCount == 0) {
-                change = newHiresInPeriod;
-                if(change > 0) changeRate = 100.0;
-            }
-
-            trendList.add(
-                    new EmployeeTrendDto(
-                            date,
-                            currentTotalCount, // DTO의 count는 누적 직원 수
-                            change,
-                            changeRate
-                    )
-            );
-
-            previousTotalCount = currentTotalCount;
+            trendList.add(new EmployeeTrendDto(date, totalCount, change, changeRate));
+            previousTotalCount = totalCount;
         }
 
         return trendList;
@@ -346,25 +341,27 @@ public class EmployeeService {
     }
 
     public List<EmployeeDistributionDto> getDistribution(String groupBy, EmploymentStatus status) {
-        List<Object[]> queryResult;
+        String finalGroupBy = Optional.ofNullable(groupBy).orElse("department");
+        EmploymentStatus finalStatus = Optional.ofNullable(status).orElse(EmploymentStatus.ACTIVE);
 
-        if ("department".equalsIgnoreCase(groupBy)) {
-            queryResult = employeeRepository.getDistributionByDepartment(status);
-        } else {
-            // 기본값은 'position'으로 설정
-            queryResult = employeeRepository.getDistributionByPosition(status);
-        }
+        // 1. 전체 직원 수를 별도의 쿼리로 조회
+        Long totalEmployees = employeeQueryRepository.countByStatus(finalStatus);
 
-        // 쿼리 결과를 DTO로 변환
-        return queryResult.stream()
-                .map(row -> new EmployeeDistributionDto(
-                        (String) row[0],
-                        ((Number) row[1]).longValue(),
-                        (Double) row[2]
-                ))
+        // 2. 그룹별 직원 수를 튜플로 조회
+        List<Tuple> distributionTuples = employeeQueryRepository.getDistributionTuple(finalGroupBy, finalStatus);
+
+        // 3. 튜플을 DTO로 변환하며 퍼센티지 계산
+        return distributionTuples.stream()
+                .map(tuple -> {
+                    String groupKey = tuple.get(0, String.class);
+                    Long count = tuple.get(1, Long.class);
+                    double percentage = (double) count / totalEmployees * 100.0;
+
+                    return new EmployeeDistributionDto(groupKey, count, percentage);
+                })
                 .collect(Collectors.toList());
-
-
     }
+
+
 
 }
