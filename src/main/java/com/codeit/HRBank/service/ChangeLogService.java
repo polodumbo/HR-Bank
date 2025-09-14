@@ -134,13 +134,13 @@ public class ChangeLogService {
         if (atFrom != null) {
             fromDateTime = LocalDateTime.ofInstant(atFrom, kstZoneId);
         } else {
-            fromDateTime = LocalDateTime.now().minusDays(7);
+            fromDateTime = null;
         }
 
         if (atTo != null) {
             toDateTime = LocalDateTime.ofInstant(atTo, kstZoneId);
         } else {
-            toDateTime = LocalDateTime.now();
+            toDateTime = null;
         }
 
         // 기본값 설정: fromDate = 7일 전, toDate = 현재
