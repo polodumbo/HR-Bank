@@ -127,10 +127,7 @@ public class EmployeeController {
             @RequestParam(defaultValue = "department") String groupBy,
             @RequestParam(defaultValue = "ACTIVE") EmploymentStatus status
     ){
-      log.info("groupBy : {}", groupBy);
-      log.info("status : {}", status);
         List<EmployeeDistributionDto> response = employeeService.getDistribution(groupBy, status);
-        log.info("999 : {}", response.get(0));
         return ResponseEntity.
                 status(HttpStatus.OK).body(response);
 
