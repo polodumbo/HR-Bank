@@ -1,23 +1,109 @@
--- data-h2.sql (예시 템플릿)
-SET REFERENTIAL_INTEGRITY FALSE;
+INSERT INTO departments (id, name, description, established_date) VALUES (1, '인사팀', '인사 관리를 담당하는 부서', '2020-01-15');
+INSERT INTO departments (id, name, description, established_date) VALUES (2, '총무팀', '각종 업무를 담당하는 부서', '2019-05-20');
+INSERT INTO departments (id, name, description, established_date) VALUES (3, '마케팅팀', '제품 홍보 및 마케팅을 담당하는 부서', '2021-03-10');
+INSERT INTO departments (id, name, description, established_date) VALUES (4, '영업1팀', '제품 판매 및 고객 관리를 담당하는 부서', '2020-04-01');
+INSERT INTO departments (id, name, description, established_date) VALUES (5, '영업2팀', '제품 판매 및 고객 관리를 담당하는 부서', '2022-02-01');
+INSERT INTO departments (id, name, description, established_date) VALUES (6, '개발1팀', '서비스 개발을 담당하는 부서', '2020-01-15');
+INSERT INTO departments (id, name, description, established_date) VALUES (7, '개발2팀', '서비스 개발을 담당하는 부서', '2021-01-30');
+INSERT INTO departments (id, name, description, established_date) VALUES (8, '개발3팀', '서비스 개발을 담당하는 부서', '2022-03-14');
 
--- departments 예시 데이터
-INSERT INTO departments (id, name, description, established_date) VALUES (1, '인사부', '인사팀', '2020-01-01');
-INSERT INTO departments (id, name, description, established_date) VALUES (2, '개발부', '개발팀', '2021-06-01');
-
--- files 예시
-INSERT INTO files (id, file_name, content_type, size) VALUES (1, 'profile1.jpg', 'image/jpeg', 1024);
-
--- employees 예시 (DO 블록으로 생성하던 항목은 여기서 개별 INSERT로 변환)
-INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status, profile_image_id)
-VALUES (1, '테스트1', 'test1@ex.com', 'EMP00001', 1, 'ENGINEER', '2022-01-01', 'ACTIVE', 1);
-
--- change_logs, change_log_diffs, backups 등도 마찬가지로 INSERT 나열
--- ...
-
--- identity/sequence 초기값 맞추기 (필요 시)
-ALTER TABLE departments ALTER COLUMN id RESTART WITH 100;
-ALTER TABLE employees ALTER COLUMN id RESTART WITH 1000;
-ALTER TABLE files ALTER COLUMN id RESTART WITH 100;
-
-SET REFERENTIAL_INTEGRITY TRUE;
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (1, '전예나', 'email1@hrbank.com', 'EMP-2025-08-001', 6, '차장', '2025-08-15', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (2, '우하윤', 'email2@hrbank.com', 'EMP-2023-12-001', 1, '사원', '2023-12-23', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (3, '나서현', 'email3@hrbank.com', 'EMP-2025-06-001', 3, '사원', '2025-06-11', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (4, '양리아', 'email4@hrbank.com', 'EMP-2023-01-001', 3, '차장', '2023-01-10', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (5, '문재이', 'email5@hrbank.com', 'EMP-2024-08-001', 4, '사원', '2024-08-15', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (6, '조재이', 'email6@hrbank.com', 'EMP-2024-04-001', 6, '대리', '2024-04-04', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (7, '이하윤', 'email7@hrbank.com', 'EMP-2024-11-001', 5, '사원', '2024-11-17', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (8, '복하린', 'email8@hrbank.com', 'EMP-2023-05-001', 1, '과장', '2023-05-14', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (9, '진시은', 'email9@hrbank.com', 'EMP-2023-06-001', 2, '과장', '2023-06-18', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (10, '홍재이', 'email10@hrbank.com', 'EMP-2024-08-002', 2, '차장', '2024-08-04', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (11, '백채원', 'email11@hrbank.com', 'EMP-2023-06-002', 7, '사원', '2023-06-11', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (12, '마서영', 'email12@hrbank.com', 'EMP-2023-04-001', 2, '대리', '2023-04-14', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (13, '권로아', 'email13@hrbank.com', 'EMP-2023-10-001', 5, '사원', '2023-10-19', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (14, '조아린', 'email14@hrbank.com', 'EMP-2024-03-001', 7, '사원', '2024-03-09', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (15, '태유진', 'email15@hrbank.com', 'EMP-2023-07-001', 3, '사원', '2023-07-07', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (16, '홍윤아', 'email16@hrbank.com', 'EMP-2023-07-002', 8, '대리', '2023-07-18', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (17, '심아인', 'email17@hrbank.com', 'EMP-2025-05-001', 5, '인턴', '2025-05-20', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (18, '지지민', 'email18@hrbank.com', 'EMP-2025-07-001', 1, '사원', '2025-07-04', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (19, '마예진', 'email19@hrbank.com', 'EMP-2025-07-002', 6, '사원', '2025-07-27', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (20, '권지민', 'email20@hrbank.com', 'EMP-2024-03-002', 4, '차장', '2024-03-25', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (21, '박수아', 'email21@hrbank.com', 'EMP-2025-06-002', 1, '사원', '2025-06-21', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (22, '안시은', 'email22@hrbank.com', 'EMP-2023-09-001', 5, '사원', '2023-09-13', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (23, '황수아', 'email23@hrbank.com', 'EMP-2023-06-003', 3, '사원', '2023-06-29', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (24, '문지유', 'email24@hrbank.com', 'EMP-2024-09-001', 1, '사원', '2024-09-23', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (25, '송연우', 'email25@hrbank.com', 'EMP-2024-06-001', 1, '대리', '2024-06-18', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (26, '허시아', 'email26@hrbank.com', 'EMP-2025-07-003', 7, '차장', '2025-07-04', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (27, '장수빈', 'email27@hrbank.com', 'EMP-2024-03-003', 8, '차장', '2024-03-12', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (28, '류태리', 'email28@hrbank.com', 'EMP-2025-08-002', 8, '인턴', '2025-08-13', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (29, '조서영', 'email29@hrbank.com', 'EMP-2023-11-001', 4, '인턴', '2023-11-16', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (30, '권유주', 'email30@hrbank.com', 'EMP-2025-07-004', 2, '사원', '2025-07-20', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (31, '복예은', 'email31@hrbank.com', 'EMP-2023-08-001', 7, '대리', '2023-08-15', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (32, '지민서', 'email32@hrbank.com', 'EMP-2023-03-001', 1, '사원', '2023-03-19', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (33, '강주아', 'email33@hrbank.com', 'EMP-2025-06-003', 7, '사원', '2025-06-13', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (34, '김채은', 'email34@hrbank.com', 'EMP-2025-08-003', 6, '사원', '2025-08-11', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (35, '강태리', 'email35@hrbank.com', 'EMP-2025-08-004', 7, '사원', '2025-08-26', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (36, '노연우', 'email36@hrbank.com', 'EMP-2024-10-001', 3, '사원', '2024-10-09', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (37, '백하은', 'email37@hrbank.com', 'EMP-2023-11-002', 3, '대리', '2023-11-18', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (38, '정지아', 'email38@hrbank.com', 'EMP-2024-01-001', 3, '대리', '2024-01-23', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (39, '한하린', 'email39@hrbank.com', 'EMP-2025-08-005', 2, '사원', '2025-08-16', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (40, '윤예린', 'email40@hrbank.com', 'EMP-2023-07-003', 2, '대리', '2023-07-30', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (41, '진예은', 'email41@hrbank.com', 'EMP-2023-04-002', 3, '대리', '2023-04-29', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (42, '구지우', 'email42@hrbank.com', 'EMP-2025-08-006', 4, '차장', '2025-08-26', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (43, '손서연', 'email43@hrbank.com', 'EMP-2023-11-003', 1, '차장', '2023-11-13', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (44, '성은서', 'email44@hrbank.com', 'EMP-2024-05-001', 8, '인턴', '2024-05-28', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (45, '전하린', 'email45@hrbank.com', 'EMP-2023-11-004', 4, '사원', '2023-11-14', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (46, '조서현', 'email46@hrbank.com', 'EMP-2024-07-001', 1, '대리', '2024-07-28', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (47, '노수빈', 'email47@hrbank.com', 'EMP-2024-08-003', 3, '대리', '2024-08-07', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (48, '최서연', 'email48@hrbank.com', 'EMP-2025-01-001', 2, '인턴', '2025-01-17', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (49, '배윤서', 'email49@hrbank.com', 'EMP-2024-09-002', 6, '사원', '2024-09-25', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (50, '송아린', 'email50@hrbank.com', 'EMP-2024-12-001', 7, '사원', '2024-12-27', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (51, '장하윤', 'email51@hrbank.com', 'EMP-2023-05-002', 7, '과장', '2023-05-10', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (52, '주채원', 'email52@hrbank.com', 'EMP-2023-02-001', 1, '과장', '2023-02-17', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (53, '나태리', 'email53@hrbank.com', 'EMP-2025-06-004', 4, '사원', '2025-06-15', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (54, '최리아', 'email54@hrbank.com', 'EMP-2025-03-001', 7, '사원', '2025-03-28', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (55, '표나은', 'email55@hrbank.com', 'EMP-2023-12-002', 7, '대리', '2023-12-19', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (56, '문윤아', 'email56@hrbank.com', 'EMP-2024-08-004', 4, '차장', '2024-08-17', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (57, '양민지', 'email57@hrbank.com', 'EMP-2023-02-002', 5, '차장', '2023-02-21', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (58, '황하은', 'email58@hrbank.com', 'EMP-2025-06-005', 4, '과장', '2025-06-28', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (59, '강민지', 'email59@hrbank.com', 'EMP-2024-09-003', 2, '대리', '2024-09-07', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (60, '송유나', 'email60@hrbank.com', 'EMP-2023-01-002', 4, '사원', '2023-01-01', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (61, '전유진', 'email61@hrbank.com', 'EMP-2023-09-002', 1, '차장', '2023-09-28', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (62, '조현서', 'email62@hrbank.com', 'EMP-2024-05-002', 4, '과장', '2024-05-10', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (63, '명현서', 'email63@hrbank.com', 'EMP-2025-03-002', 8, '사원', '2025-03-20', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (64, '명이서', 'email64@hrbank.com', 'EMP-2025-09-001', 8, '사원', '2025-09-12', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (65, '홍재이', 'email65@hrbank.com', 'EMP-2023-04-003', 4, '차장', '2023-04-12', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (66, '표나은', 'email66@hrbank.com', 'EMP-2023-07-004', 2, '과장', '2023-07-27', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (67, '황예린', 'email67@hrbank.com', 'EMP-2023-08-002', 4, '대리', '2023-08-14', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (68, '최소윤', 'email68@hrbank.com', 'EMP-2024-08-005', 5, '대리', '2024-08-08', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (69, '태채원', 'email69@hrbank.com', 'EMP-2023-01-003', 2, '차장', '2023-01-12', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (70, '문지아', 'email70@hrbank.com', 'EMP-2025-06-006', 3, '차장', '2025-06-19', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (71, '박주아', 'email71@hrbank.com', 'EMP-2025-08-007', 5, '사원', '2025-08-25', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (72, '류지아', 'email72@hrbank.com', 'EMP-2024-11-002', 6, '대리', '2024-11-25', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (73, '명지민', 'email73@hrbank.com', 'EMP-2023-02-003', 1, '사원', '2023-02-24', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (74, '심서영', 'email74@hrbank.com', 'EMP-2024-05-003', 2, '사원', '2024-05-27', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (75, '곽예은', 'email75@hrbank.com', 'EMP-2024-11-003', 7, '과장', '2024-11-04', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (76, '곽윤서', 'email76@hrbank.com', 'EMP-2025-02-001', 8, '사원', '2025-02-15', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (77, '배다은', 'email77@hrbank.com', 'EMP-2023-06-004', 3, '대리', '2023-06-22', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (78, '복지원', 'email78@hrbank.com', 'EMP-2023-07-005', 3, '대리', '2023-07-08', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (79, '곽지민', 'email79@hrbank.com', 'EMP-2025-01-002', 3, '과장', '2025-01-24', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (80, '허수연', 'email80@hrbank.com', 'EMP-2023-08-003', 5, '사원', '2023-08-06', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (81, '우지윤', 'email81@hrbank.com', 'EMP-2025-01-003', 5, '인턴', '2025-01-01', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (82, '마하은', 'email82@hrbank.com', 'EMP-2025-02-002', 2, '대리', '2025-02-15', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (83, '우소윤', 'email83@hrbank.com', 'EMP-2025-05-002', 4, '차장', '2025-05-28', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (84, '우재이', 'email84@hrbank.com', 'EMP-2024-06-002', 8, '대리', '2024-06-21', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (85, '홍윤서', 'email85@hrbank.com', 'EMP-2024-03-004', 5, '인턴', '2024-03-20', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (86, '심소윤', 'email86@hrbank.com', 'EMP-2023-04-004', 2, '사원', '2023-04-17', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (87, '정시아', 'email87@hrbank.com', 'EMP-2025-09-002', 1, '사원', '2025-09-05', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (88, '임유진', 'email88@hrbank.com', 'EMP-2024-09-004', 6, '사원', '2024-09-06', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (89, '문현서', 'email89@hrbank.com', 'EMP-2025-01-004', 8, '과장', '2025-01-28', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (90, '전수연', 'email90@hrbank.com', 'EMP-2024-09-005', 8, '대리', '2024-09-17', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (91, '석유나', 'email91@hrbank.com', 'EMP-2023-10-002', 6, '대리', '2023-10-17', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (92, '유아윤', 'email92@hrbank.com', 'EMP-2023-04-005', 8, '인턴', '2023-04-21', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (93, '나현서', 'email93@hrbank.com', 'EMP-2024-03-005', 8, '과장', '2024-03-17', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (94, '양시아', 'email94@hrbank.com', 'EMP-2023-06-005', 1, '과장', '2023-06-17', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (95, '고소윤', 'email95@hrbank.com', 'EMP-2025-05-003', 7, '사원', '2025-05-25', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (96, '심민서', 'email96@hrbank.com', 'EMP-2023-03-002', 8, '사원', '2023-03-26', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (97, '유리아', 'email97@hrbank.com', 'EMP-2025-01-005', 2, '사원', '2025-01-10', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (98, '송지원', 'email98@hrbank.com', 'EMP-2025-02-003', 8, '대리', '2025-02-10', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (99, '명수아', 'email99@hrbank.com', 'EMP-2025-04-001', 8, '과장', '2025-04-24', 'ACTIVE');
+INSERT INTO employees (id, name, email, employee_number, department_id, position, hire_date, status) VALUES (100, '양은서', 'email100@hrbank.com', 'EMP-2025-02-004', 3, '인턴', '2025-02-28', 'ACTIVE');
