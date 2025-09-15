@@ -1,1 +1,10 @@
+// 배포용 코드추가
+// 필요한 JDK를 자동으로 찾아 다운로드
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+
 rootProject.name = 'HRBank'
+
+
