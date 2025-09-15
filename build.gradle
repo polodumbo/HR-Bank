@@ -13,6 +13,10 @@ java {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
 }
+//배포용 설정
+bootJar {
+    archiveFileName = 'app.jar' // 빌드된 jar 파일의 이름을 'app.jar'로 설정
+}
 
 configurations {
 	compileOnly {
