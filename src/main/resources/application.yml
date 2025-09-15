@@ -6,15 +6,16 @@ spring:
       maxFileSize: 10MB # 파일 하나의 최대 크기
       maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
   datasource: #DB연동
-    url: jdbc:postgresql://localhost:5432/hrbank
-    username: user1
-    password: 1234
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:h2:mem:hrbank;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
 
   #JPA
   jpa:
     hibernate:
-      ddl-auto: validate #테이블 자동 생성/업데이트 옵션
+      ddl-auto: create #테이블 자동 생성/업데이트 옵션
     show-sql: true #실행되는 SQL 콘솔 출력 여부
     properties:
       hibernate:
@@ -24,6 +25,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
         jdbc.time_zone: UTC
+  sql:
+    init:
+      platform: h2
+      mode: never
 
 # swagger
 springdoc:

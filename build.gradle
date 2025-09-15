@@ -42,6 +42,9 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    //h2
+    runtimeOnly 'com.h2database:h2'
+
     // QueryDSL JPA
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
     // QueryDSL Annotation Processor
