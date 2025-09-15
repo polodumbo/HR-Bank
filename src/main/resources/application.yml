@@ -28,7 +28,7 @@ spring:
   sql:
     init:
       platform: h2
-      mode: never
+      mode: always
 server:
   port=${PORT:8080}:
 # swagger
