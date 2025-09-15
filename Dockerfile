@@ -1,20 +1,24 @@
-# 사용할 자바 런타임 이미지 지정
-FROM openjdk:17-jdk-slim
+# Stage 1: 빌드 환경 (builder stage)
+FROM openjdk:17-jdk-slim AS builder
 
-# Gradle Wrapper를 사용하기 위해 빌드 도구 설치
-# 필요한 의존성을 먼저 설치해 레이어 캐싱을 활용합니다.
+WORKDIR /app
+
+# Gradle Wrapper 및 소스 코드 복사
 COPY gradlew .
 COPY gradle gradle
-RUN chmod +x ./gradlew
-
-# 애플리케이션 소스 코드 복사
 COPY src src
 
-# 프로젝트 빌드
-RUN ./gradlew bootJar
+# 애플리케이션 빌드
+RUN ./gradlew clean build bootJar --no-daemon
 
-# 빌드된 JAR 파일을 /app 디렉터리로 복사
-COPY build/libs/*.jar /app/app.jar
+# Stage 2: 실행 환경 (final stage)
+# 더 작은 런타임 이미지를 사용하여 컨테이너 크기를 줄입니다.
+FROM openjdk:17-jre-slim
 
-# 애플리케이션 실행 명령어
+WORKDIR /app
+
+# 빌드 스테이지에서 생성된 JAR 파일만 복사
+COPY --from=builder /app/build/libs/*.jar /app/app.jar
+
+# 애플리케이션 실행
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
