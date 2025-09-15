@@ -7,6 +7,7 @@ import com.codeit.HRBank.dto.data.BackupDto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -61,7 +62,7 @@ public interface BackupRepository extends JpaRepository<Backup, Long> {
             ORDER BY b.startedAt DESC
             LIMIT 1
             """)
-    Backup findLatest(
+    Optional<Backup> findLatest(
             @Param("status") BackupStatus status
     );
 

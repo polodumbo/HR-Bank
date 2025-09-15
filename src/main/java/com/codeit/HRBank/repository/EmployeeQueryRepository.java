@@ -58,6 +58,30 @@ public class EmployeeQueryRepository {
                 .orderBy(employee.id.countDistinct().desc())
                 .fetch();
     }
+
+    // 기간 시작 전 총 직원 수 조회
+    public long getEmployeeCountBefore(LocalDate date) {
+        // 지정된 날짜 이전에 입사한 직원 수
+        long hiredBefore = queryFactory
+                .select(employee.id.countDistinct())
+                .from(employee)
+                .where(employee.hireDate.lt(date))
+                .fetchOne();
+
+        // 지정된 날짜 이전에 퇴사한 직원 수
+        long resignedBefore = queryFactory
+                .select(changeLog.id.countDistinct())
+                .from(changeLogDiff)
+                .innerJoin(changeLogDiff.log, changeLog)
+                .where(
+                        changeLog.at.lt(date.atStartOfDay()),
+                        changeLogDiff.propertyName.eq("status"),
+                        changeLogDiff.afterValue.eq("RESIGNED")
+                )
+                .fetchOne();
+
+        return hiredBefore - resignedBefore;
+    }
     // 전체 직원 수를 세는 쿼리 메서드 (레포지토리에도 추가해야 함)
     // 이 메서드는 EmployeeQueryRepository에 추가되어야 합니다.
     public Long countByStatus(EmploymentStatus status) {
