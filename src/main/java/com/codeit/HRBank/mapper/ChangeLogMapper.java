@@ -1,6 +1,6 @@
 package com.codeit.HRBank.mapper;
 
-import com.codeit.HRBank.domain.Change_log;
+import com.codeit.HRBank.domain.ChangeLog;
 import com.codeit.HRBank.dto.data.ChangeLogDto;
 import com.codeit.HRBank.dto.response.CursorPageResponseChangeLogDto;
 import java.util.List;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ChangeLogMapper {
 
-  public ChangeLogDto toDto(Change_log changeLog) {
+  public ChangeLogDto toDto(ChangeLog changeLog) {
     if (changeLog == null) {
       return null;
     }
@@ -27,9 +27,9 @@ public class ChangeLogMapper {
 
   // Slice<ChangeLog>을 CursorPageResponseChangeLogDto<ChangeLogDto>로 변환하는 메서드
   public CursorPageResponseChangeLogDto<ChangeLogDto> toDtoSlice(
-      Slice<Change_log> changeLogSlice) {
+      Slice<ChangeLog> changeLogSlice) {
 
-    // 1. Slice<Change_log>의 content를 Stream을 이용해 List<ChangeLogDto>로 변환
+    // 1. Slice<ChangeLog>의 content를 Stream을 이용해 List<ChangeLogDto>로 변환
     List<ChangeLogDto> dtoList = changeLogSlice.getContent().stream()
         .map(this::toDto)
         .collect(Collectors.toList());

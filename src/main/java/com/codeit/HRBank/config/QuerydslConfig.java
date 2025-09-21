@@ -1,4 +1,4 @@
-package com.codeit.HRBank.Config;
+package com.codeit.HRBank.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;

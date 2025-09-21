@@ -3,7 +3,7 @@ package com.codeit.HRBank.service;
 
 import com.codeit.HRBank.domain.Backup;
 import com.codeit.HRBank.domain.BackupStatus;
-import com.codeit.HRBank.domain.Change_log;
+import com.codeit.HRBank.domain.ChangeLog;
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.domain.File;
 import com.codeit.HRBank.dto.data.BackupDto;
@@ -217,7 +217,7 @@ public class BackupService {
         log.info("마지막백업시간: {}", lastBackupTime);
 
         // 2. 가장 최근 직원 정보 수정 시간 가져옴
-        Optional<Change_log> latestChangeLog = changeLogRepository.findFirstByOrderByAtDesc();
+        Optional<ChangeLog> latestChangeLog = changeLogRepository.findFirstByOrderByAtDesc();
 
         // 3. 마지막 백업 시간과 최근 변경 이력 시간 비교
         if (latestChangeLog.isPresent()) {

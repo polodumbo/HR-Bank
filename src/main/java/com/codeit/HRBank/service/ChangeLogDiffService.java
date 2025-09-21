@@ -1,7 +1,7 @@
 package com.codeit.HRBank.service;
 
-import com.codeit.HRBank.domain.Change_log;
-import com.codeit.HRBank.domain.Change_log_diff;
+import com.codeit.HRBank.domain.ChangeLog;
+import com.codeit.HRBank.domain.ChangeLogDiff;
 import com.codeit.HRBank.domain.Employee;
 import com.codeit.HRBank.repository.ChangeLogDiffRepository;
 import java.util.ArrayList;
@@ -16,42 +16,42 @@ public class ChangeLogDiffService {
 
   private final ChangeLogDiffRepository changeLogDiffRepository;
 
-  public void create(Change_log changeLog, Employee newEmployee) {
-    List<Change_log_diff> diffs = new ArrayList<>();
-    diffs.add(Change_log_diff.builder().log(changeLog).propertyName("name")
+  public void create(ChangeLog changeLog, Employee newEmployee) {
+    List<ChangeLogDiff> diffs = new ArrayList<>();
+    diffs.add(ChangeLogDiff.builder().log(changeLog).propertyName("name")
         .afterValue(newEmployee.getName()).build());
-    diffs.add(Change_log_diff.builder().log(changeLog).propertyName("email")
+    diffs.add(ChangeLogDiff.builder().log(changeLog).propertyName("email")
         .afterValue(newEmployee.getEmail()).build());
-    diffs.add(Change_log_diff.builder().log(changeLog).propertyName("department")
+    diffs.add(ChangeLogDiff.builder().log(changeLog).propertyName("department")
         .afterValue(newEmployee.getDepartment().getName()).build());
-    diffs.add(Change_log_diff.builder().log(changeLog).propertyName("position")
+    diffs.add(ChangeLogDiff.builder().log(changeLog).propertyName("position")
         .afterValue(newEmployee.getPosition()).build());
-    diffs.add(Change_log_diff.builder().log(changeLog).propertyName("hireDate")
+    diffs.add(ChangeLogDiff.builder().log(changeLog).propertyName("hireDate")
         .afterValue(newEmployee.getHireDate().toString()).build());
-    diffs.add(Change_log_diff.builder().log(changeLog).propertyName("status")
+    diffs.add(ChangeLogDiff.builder().log(changeLog).propertyName("status")
         .afterValue(newEmployee.getStatus().toString()).build());
     changeLogDiffRepository.saveAll(diffs);
   }
 
-  public void delete(Change_log changeLog, Employee newEmployee) {
-    List<Change_log_diff> diffs = new ArrayList<>();
-    diffs.add(Change_log_diff.builder().log(changeLog).propertyName("name")
+  public void delete(ChangeLog changeLog, Employee newEmployee) {
+    List<ChangeLogDiff> diffs = new ArrayList<>();
+    diffs.add(ChangeLogDiff.builder().log(changeLog).propertyName("name")
         .beforeValue(newEmployee.getName()).build());
-    diffs.add(Change_log_diff.builder().log(changeLog).propertyName("email")
+    diffs.add(ChangeLogDiff.builder().log(changeLog).propertyName("email")
         .beforeValue(newEmployee.getEmail()).build());
-    diffs.add(Change_log_diff.builder().log(changeLog).propertyName("department")
+    diffs.add(ChangeLogDiff.builder().log(changeLog).propertyName("department")
         .beforeValue(newEmployee.getDepartment().getName()).build());
-    diffs.add(Change_log_diff.builder().log(changeLog).propertyName("position")
+    diffs.add(ChangeLogDiff.builder().log(changeLog).propertyName("position")
         .beforeValue(newEmployee.getPosition()).build());
-    diffs.add(Change_log_diff.builder().log(changeLog).propertyName("hireDate")
+    diffs.add(ChangeLogDiff.builder().log(changeLog).propertyName("hireDate")
         .beforeValue(newEmployee.getHireDate().toString()).build());
-    diffs.add(Change_log_diff.builder().log(changeLog).propertyName("status")
+    diffs.add(ChangeLogDiff.builder().log(changeLog).propertyName("status")
         .beforeValue(newEmployee.getStatus().toString()).build());
     changeLogDiffRepository.saveAll(diffs);
   }
 
-  public void update(Change_log log, Employee original, Employee updated) {
-    List<Change_log_diff> diffs = new ArrayList<>();
+  public void update(ChangeLog log, Employee original, Employee updated) {
+    List<ChangeLogDiff> diffs = new ArrayList<>();
 
     addIfChanged(diffs, log, "name",
         original.getName(), updated.getName());
@@ -77,8 +77,8 @@ public class ChangeLogDiffService {
     }
   }
 
-  private void addIfChanged(List<Change_log_diff> diffs,
-      Change_log log,
+  private void addIfChanged(List<ChangeLogDiff> diffs,
+      ChangeLog log,
       String property,
       Object oldVal,
       Object newVal) {
@@ -86,7 +86,7 @@ public class ChangeLogDiffService {
     if (!Objects.equals(
         oldVal == null ? null : oldVal.toString(),
         newVal == null ? null : newVal.toString())) {
-      diffs.add(Change_log_diff.builder()
+      diffs.add(ChangeLogDiff.builder()
           .log(log)
           .propertyName(property)
           .beforeValue(oldVal == null ? null : oldVal.toString())
