@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class FileMapper {
 
-  public FileDto toDto(File file) {
-    return new FileDto(
-        file.getId(),
-        file.getFileName(),
-        file.getSize(),
-        file.getContentType()
-    );
-  }
+    public FileDto toDto(File file) {
+        return new FileDto(
+            file.getId(),
+            file.getFileName(),
+            file.getSize(),
+            file.getContentType()
+        );
+    }
 }

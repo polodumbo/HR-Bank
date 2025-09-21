@@ -6,8 +6,6 @@ import com.codeit.HRBank.dto.data.DiffDto;
 import com.codeit.HRBank.dto.response.CursorPageResponseChangeLogDto;
 import com.codeit.HRBank.service.ChangeLogService;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,8 +40,8 @@ public class ChangeLogController {
 
     @GetMapping("/count")
     public ResponseEntity<Long> count(
-            @RequestParam(required = false) Instant fromDate,
-            @RequestParam(required = false) Instant toDate
+        @RequestParam(required = false) Instant fromDate,
+        @RequestParam(required = false) Instant toDate
     ) {
         log.info("fromDate : {}", fromDate);
         log.info("toDate : {}", toDate);
@@ -56,23 +54,23 @@ public class ChangeLogController {
 
     @GetMapping
     public ResponseEntity<CursorPageResponseChangeLogDto> find(
-            @RequestParam(required = false) String employeeNumber,
-            @RequestParam(required = false) ChangeLogType type,
-            @RequestParam(required = false) String memo,
-            @RequestParam(required = false) String ipAddress,
-            @RequestParam(required = false) Instant atFrom,
-            @RequestParam(required = false) Instant atTo,
-            @RequestParam(required = false) Long idAfter,        // 이전 페이지의 마지막 ID
-            @RequestParam(required = false) String cursor,       // 커서(선택)
-            @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(defaultValue = "at") String sortField,
-            @RequestParam(defaultValue = "desc") String sortDirection
+        @RequestParam(required = false) String employeeNumber,
+        @RequestParam(required = false) ChangeLogType type,
+        @RequestParam(required = false) String memo,
+        @RequestParam(required = false) String ipAddress,
+        @RequestParam(required = false) Instant atFrom,
+        @RequestParam(required = false) Instant atTo,
+        @RequestParam(required = false) Long idAfter,        // 이전 페이지의 마지막 ID
+        @RequestParam(required = false) String cursor,       // 커서(선택)
+        @RequestParam(defaultValue = "10") Integer size,
+        @RequestParam(defaultValue = "at") String sortField,
+        @RequestParam(defaultValue = "desc") String sortDirection
     ) {
         CursorPageResponseChangeLogDto response = changeLogService.findByCondition(employeeNumber,
-                type,
-                memo, ipAddress, atFrom, atTo, idAfter, cursor, size, sortField, sortDirection);
+            type,
+            memo, ipAddress, atFrom, atTo, idAfter, cursor, size, sortField, sortDirection);
         return ResponseEntity.
-                status(HttpStatus.OK).body(response);
+            status(HttpStatus.OK).body(response);
     }
 
 }

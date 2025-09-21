@@ -51,9 +51,9 @@ public class BackupService {
     public BackupDto create(String worker_ip) {
         log.info("1111111111");
         Backup backup = Backup.builder()
-                .worker(worker_ip)
-                .status(BackupStatus.IN_PROGRESS)
-                .build();
+            .worker(worker_ip)
+            .status(BackupStatus.IN_PROGRESS)
+            .build();
         backup = backupRepository.save(backup);
 
         try {
@@ -85,29 +85,29 @@ public class BackupService {
                 // CSV 파일 생성 및 바이트 배열 추출
                 byte[] csvBytes;
                 String fileName = "employees-backup-" + LocalDateTime.now()
-                        .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".csv";
+                    .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".csv";
                 String filePath = "backups/" + fileName;
 
                 // 메모리에 CSV 데이터를 작성하는 로직으로 변경
                 try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                        OutputStreamWriter writer = new OutputStreamWriter(bos,
-                                StandardCharsets.UTF_8)) {
+                    OutputStreamWriter writer = new OutputStreamWriter(bos,
+                        StandardCharsets.UTF_8)) {
 
                     writer.append(
-                            "id,name,email,employee_number,department_id,position,hire_date,status\n");
+                        "id,name,email,employee_number,department_id,position,hire_date,status\n");
 
                     for (Employee employee : employees) {
                         writer.append(String.join(",",
-                                String.valueOf(employee.getId()),
-                                employee.getName(),
-                                employee.getEmail(),
-                                employee.getEmployeeNumber(),
-                                employee.getDepartment() != null ? String.valueOf(
-                                        employee.getDepartment().getId()) : "",
-                                employee.getPosition(),
-                                employee.getHireDate()
-                                        .format(DateTimeFormatter.ISO_LOCAL_DATE),
-                                employee.getStatus().name()
+                            String.valueOf(employee.getId()),
+                            employee.getName(),
+                            employee.getEmail(),
+                            employee.getEmployeeNumber(),
+                            employee.getDepartment() != null ? String.valueOf(
+                                employee.getDepartment().getId()) : "",
+                            employee.getPosition(),
+                            employee.getHireDate()
+                                .format(DateTimeFormatter.ISO_LOCAL_DATE),
+                            employee.getStatus().name()
                         ));
                         writer.append("\n");
                     }
@@ -157,15 +157,15 @@ public class BackupService {
 
     @Transactional
     public CursorPageResponseBackupDto findByCondition(
-            String worker,
-            BackupStatus status,
-            LocalDateTime startedAtFrom,
-            LocalDateTime startedAtTo,
-            Long idAfter,        // 이전 페이지의 마지막 ID
-            String cursor,       // 커서(선택)
-            Integer size,
-            String sortField,
-            String sortDirection
+        String worker,
+        BackupStatus status,
+        LocalDateTime startedAtFrom,
+        LocalDateTime startedAtTo,
+        Long idAfter,        // 이전 페이지의 마지막 ID
+        String cursor,       // 커서(선택)
+        Integer size,
+        String sortField,
+        String sortDirection
     ) {
 
         size = size != null && size > 0 ? size : 10;
@@ -178,7 +178,7 @@ public class BackupService {
         Pageable pageable = PageRequest.of(0, size, sort);
 
         Slice<Backup> backupSlice = backupRepository.findByCondition(
-                worker, startedAtFrom, startedAtTo, status, idAfter, pageable
+            worker, startedAtFrom, startedAtTo, status, idAfter, pageable
         );
 
         return backupMapper.toDtoSlice(backupSlice);
@@ -192,7 +192,7 @@ public class BackupService {
         // backup이 null일 경우 DTO 변환을 시도하지 않고 null을 반환
         if (backup == null) {
             return null;
-        };
+        }
         return backupMapper.toDto(backup);
     }
 
@@ -208,7 +208,8 @@ public class BackupService {
 
         // 1. 마지막으로 'COMPLETED'된 백업의 시작 시간을 가져옴
         LocalDateTime lastBackupTime = null;
-        Backup lastCompletedBackup = backupRepository.findLatest(BackupStatus.COMPLETED).orElse(null);
+        Backup lastCompletedBackup = backupRepository.findLatest(BackupStatus.COMPLETED)
+            .orElse(null);
 
         if (lastCompletedBackup == null) {
             return true;
@@ -221,12 +222,10 @@ public class BackupService {
 
         // 3. 마지막 백업 시간과 최근 변경 이력 시간 비교
         if (latestChangeLog.isPresent()) {
-            LocalDateTime latestChangeTime = LocalDateTime.from(latestChangeLog.get().getAt());
+            LocalDateTime latestChangeTime = latestChangeLog.get().getAt();
             log.info("마지막 로그 시간: {}", latestChangeTime);
 
-            if (latestChangeTime.isBefore(lastBackupTime)) {
-                return false;
-            }
+            return !latestChangeTime.isBefore(lastBackupTime);
         }
         return true;
     }

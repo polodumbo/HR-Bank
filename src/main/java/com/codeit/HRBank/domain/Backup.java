@@ -14,17 +14,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
@@ -49,7 +45,7 @@ public class Backup {
     @Column(name = "started_at", columnDefinition = "timestamp with time zone", updatable = false, nullable = false)
     private LocalDateTime startedAt;
 
-//    @LastModifiedDate
+    //    @LastModifiedDate
     @Column(columnDefinition = "timestamp with time zone", name = "ended_at")
     private LocalDateTime endedAt;
 
@@ -59,7 +55,7 @@ public class Backup {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "file_id",
-            foreignKey = @ForeignKey(name = "backups_files_id_fk"), nullable = true)
+        foreignKey = @ForeignKey(name = "backups_files_id_fk"), nullable = true)
     private File file;
 
     public Backup(String worker, BackupStatus status) {

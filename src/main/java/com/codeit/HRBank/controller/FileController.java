@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/files")
 public class FileController {
 
-  private final FileService fileService;
-  private final FileStorage fileStorage;
+    private final FileService fileService;
+    private final FileStorage fileStorage;
 
-  @GetMapping("/{id}/download")
-  public ResponseEntity<?> download(@PathVariable("id") Long fileId) {
-    FileDto fileDto = fileService.find(fileId);
-    return fileStorage.download(fileDto);
-  }
+    @GetMapping("/{id}/download")
+    public ResponseEntity<?> download(@PathVariable("id") Long fileId) {
+        FileDto fileDto = fileService.find(fileId);
+        return fileStorage.download(fileDto);
+    }
 
 }

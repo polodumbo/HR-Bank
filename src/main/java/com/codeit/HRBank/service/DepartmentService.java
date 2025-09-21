@@ -7,10 +7,8 @@ import com.codeit.HRBank.dto.request.DepartmentUpdateRequest;
 import com.codeit.HRBank.dto.response.CursorPageResponseDepartmentDto;
 import com.codeit.HRBank.mapper.DepartmentMapper;
 import com.codeit.HRBank.repository.DepartmentRepository;
-import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -36,11 +34,11 @@ public class DepartmentService {
             throw new IllegalArgumentException("이미 존재하는 부서명 : " + request.name());
         }
         Department savedDepartment = departmentRepository.save(
-                Department.builder()
-                        .name(request.name())
-                        .description(request.description())
-                        .establishedDate(request.establishedDate())
-                        .build()
+            Department.builder()
+                .name(request.name())
+                .description(request.description())
+                .establishedDate(request.establishedDate())
+                .build()
         );
         return departmentMapper.toDto(savedDepartment);
     }
@@ -48,7 +46,7 @@ public class DepartmentService {
     @Transactional
     public DepartmentDto update(Long id, DepartmentUpdateRequest request) {
         Department department = departmentRepository.findById(id).orElseThrow(
-                () -> new NoSuchElementException("부서를 찾을 수 없음 : " + id)
+            () -> new NoSuchElementException("부서를 찾을 수 없음 : " + id)
         );
 
         if (!request.name().equals(department.getName())) {
@@ -82,20 +80,20 @@ public class DepartmentService {
     @Transactional
     public DepartmentDto find(Long departmentId) {
         return departmentRepository.findById(departmentId)
-                .map(departmentMapper::toDto)
-                .orElseThrow(
-                        () -> new NoSuchElementException(
-                                "Department with id" + departmentId + "notfound"));
+            .map(departmentMapper::toDto)
+            .orElseThrow(
+                () -> new NoSuchElementException(
+                    "Department with id" + departmentId + "notfound"));
     }
 
     @Transactional
     public CursorPageResponseDepartmentDto findByCondition(
-            String nameOrDescription,
-            Long idAfter,
-            String cursor,
-            Integer size,
-            String sortField,
-            String sortDirection) {
+        String nameOrDescription,
+        Long idAfter,
+        String cursor,
+        Integer size,
+        String sortField,
+        String sortDirection) {
 
 //        Long idAfter = request.idAfter();
 //        String cursor = request.cursor();

@@ -2,14 +2,14 @@ package com.codeit.HRBank.service;
 
 import com.codeit.HRBank.domain.Department;
 import com.codeit.HRBank.domain.Employee;
-import com.codeit.HRBank.domain.File;
 import com.codeit.HRBank.domain.EmploymentStatus;
+import com.codeit.HRBank.domain.File;
 import com.codeit.HRBank.dto.data.EmployeeDistributionDto;
 import com.codeit.HRBank.dto.data.EmployeeTrendDto;
+import com.codeit.HRBank.dto.data.FileDto;
 import com.codeit.HRBank.dto.request.EmployeeRegistrationRequest;
 import com.codeit.HRBank.dto.request.EmployeeUpdateRequest;
 import com.codeit.HRBank.dto.request.FileCreateRequest;
-import com.codeit.HRBank.dto.data.FileDto;
 import com.codeit.HRBank.dto.response.CursorPageResponseEmployeeDto;
 import com.codeit.HRBank.dto.response.EmployeeDetailsResponse;
 import com.codeit.HRBank.dto.response.EmployeeResponse;
@@ -21,11 +21,15 @@ import com.codeit.HRBank.repository.EmployeeRepository;
 import com.codeit.HRBank.repository.FileRepository;
 import com.querydsl.core.Tuple;
 import jakarta.persistence.EntityNotFoundException;
+import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -37,10 +41,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -59,26 +59,26 @@ public class EmployeeService {
     //직원 등록
     @Transactional
     public Employee registerNewEmployee(EmployeeRegistrationRequest request,
-            MultipartFile profileImage) {
+        MultipartFile profileImage) {
         validateEmail(request.email());
 
         Department department = departmentRepository.findById(request.departmentId())
-                .orElseThrow(() -> new NoSuchElementException(
-                        "부서 정보를 찾을 수 없습니다. ID: " + request.departmentId()));
+            .orElseThrow(() -> new NoSuchElementException(
+                "부서 정보를 찾을 수 없습니다. ID: " + request.departmentId()));
 
         String employeeNumber = generateEmployeeNumber();
         File profileFile = saveProfileImage(profileImage);
 
         Employee newEmployee = Employee.builder()
-                .name(request.name())
-                .email(request.email())
-                .employeeNumber(employeeNumber)
-                .department(department)
-                .position(request.position())
-                .hireDate(request.hireDate())
-                .status(EmploymentStatus.ACTIVE)
-                .profileImage(profileFile)
-                .build();
+            .name(request.name())
+            .email(request.email())
+            .employeeNumber(employeeNumber)
+            .department(department)
+            .position(request.position())
+            .hireDate(request.hireDate())
+            .status(EmploymentStatus.ACTIVE)
+            .profileImage(profileFile)
+            .build();
 
         Employee savedEmployee = employeeRepository.save(newEmployee);
         changeLogService.create(newEmployee);
@@ -94,8 +94,10 @@ public class EmployeeService {
 
 
     private String generateEmployeeNumber() {
-        String prefix = "EMP-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-%";
-        Optional<String> lastEmployeeNumber = employeeRepository.findLastEmployeeNumberStartingWith(prefix);
+        String prefix =
+            "EMP-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-%";
+        Optional<String> lastEmployeeNumber = employeeRepository.findLastEmployeeNumberStartingWith(
+            prefix);
 
         String newEmployeeNumber;
         if (lastEmployeeNumber.isPresent()) {
@@ -104,10 +106,12 @@ public class EmployeeService {
             newEmployeeNumber = generateNextNumber(lastEmployeeNumber.get());
         } else {
             // 없다면 첫 번째 번호 생성
-            newEmployeeNumber = "EMP-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-001";
+            newEmployeeNumber =
+                "EMP-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-001";
         }
         return newEmployeeNumber;
     }
+
     public String generateNextNumber(String lastNumber) {
         // 1. "EMP-2025-09-005"에서 "005" 부분을 추출
         String prefix = lastNumber.substring(0, lastNumber.lastIndexOf('-') + 1);
@@ -130,16 +134,16 @@ public class EmployeeService {
 
         try {
             FileCreateRequest fileCreateRequest = new FileCreateRequest(
-                    profileImage.getOriginalFilename(),
-                    profileImage.getContentType(),
-                    profileImage.getBytes()
+                profileImage.getOriginalFilename(),
+                profileImage.getContentType(),
+                profileImage.getBytes()
             );
 
             FileDto fileDto = fileService.create(fileCreateRequest);
 
             return fileRepository.findById(fileDto.id())
-                    .orElseThrow(() -> new NoSuchElementException(
-                            "저장된 파일을 찾을 수 없습니다. ID: " + fileDto.id()));
+                .orElseThrow(() -> new NoSuchElementException(
+                    "저장된 파일을 찾을 수 없습니다. ID: " + fileDto.id()));
 
         } catch (IOException e) {
             return null;
@@ -150,7 +154,7 @@ public class EmployeeService {
     @Transactional
     public void deleteEmployee(Long id, String ipAddress) {
         Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
+            .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
         changeLogService.delete(employee, ipAddress);
 
         if (employee.getProfileImage() != null) {
@@ -161,25 +165,25 @@ public class EmployeeService {
 
     //직원 정보 수정
     public EmployeeResponse updateEmployee(Long id, EmployeeUpdateRequest updateRequest,
-            String ipAddress, MultipartFile profileImage) {
+        String ipAddress, MultipartFile profileImage) {
 
         Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
+            .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
 
         Employee originalEmployee = Employee.builder()
-                .id(employee.getId())
-                .name(employee.getName())
-                .email(employee.getEmail())
-                .employeeNumber(employee.getEmployeeNumber())
-                .department(employee.getDepartment())
-                .position(employee.getPosition())
-                .hireDate(employee.getHireDate())
-                .status(employee.getStatus())
-                .profileImage(employee.getProfileImage())
-                .build();
+            .id(employee.getId())
+            .name(employee.getName())
+            .email(employee.getEmail())
+            .employeeNumber(employee.getEmployeeNumber())
+            .department(employee.getDepartment())
+            .position(employee.getPosition())
+            .hireDate(employee.getHireDate())
+            .status(employee.getStatus())
+            .profileImage(employee.getProfileImage())
+            .build();
 
         if (updateRequest.getEmail() != null && !updateRequest.getEmail()
-                .equals(employee.getEmail())) {
+            .equals(employee.getEmail())) {
             if (employeeRepository.existsByEmail(updateRequest.getEmail())) {
                 throw new DuplicateEmailException("이미 사용 중인 이메일입니다: " + updateRequest.getEmail());
             }
@@ -193,8 +197,8 @@ public class EmployeeService {
         }
         if (updateRequest.getDepartmentId() != null) {
             Department department = departmentRepository.findById(updateRequest.getDepartmentId())
-                    .orElseThrow(() -> new NoSuchElementException(
-                            "부서를 찾을 수 없습니다. ID: " + updateRequest.getDepartmentId()));
+                .orElseThrow(() -> new NoSuchElementException(
+                    "부서를 찾을 수 없습니다. ID: " + updateRequest.getDepartmentId()));
             employee.setDepartment(department);
         }
         if (updateRequest.getPosition() != null) {
@@ -220,8 +224,8 @@ public class EmployeeService {
                 employee.setProfileImage(null);
             } else {
                 File existingImage = fileRepository.findById(updateRequest.getProfileImageId())
-                        .orElseThrow(() -> new EntityNotFoundException(
-                                "포로필 이미지를 찾을 수 없습니다. ID: " + updateRequest.getProfileImageId()));
+                    .orElseThrow(() -> new EntityNotFoundException(
+                        "포로필 이미지를 찾을 수 없습니다. ID: " + updateRequest.getProfileImageId()));
                 employee.setProfileImage(existingImage);
             }
         }
@@ -235,24 +239,24 @@ public class EmployeeService {
     //직원 상세 정보 조회
     public EmployeeDetailsResponse getEmployeeDetailsById(Long id) {
         Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
+            .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID: " + id));
 
         return EmployeeDetailsResponse.from(employee);
     }
 
     public CursorPageResponseEmployeeDto findByCondition(
-            String nameOrEmail,
-            String employeeNumber,
-            String departmentName,
-            String position,
-            LocalDate hireDateFrom,
-            LocalDate hireDateTo,
-            EmploymentStatus status,
-            Long idAfter,        // 이전 페이지의 마지막 ID
-            String cursor,       // 커서(선택)
-            Integer size,
-            String sortField,
-            String sortDirection) {
+        String nameOrEmail,
+        String employeeNumber,
+        String departmentName,
+        String position,
+        LocalDate hireDateFrom,
+        LocalDate hireDateTo,
+        EmploymentStatus status,
+        Long idAfter,        // 이전 페이지의 마지막 ID
+        String cursor,       // 커서(선택)
+        Integer size,
+        String sortField,
+        String sortDirection) {
 
 //        Long idAfter = request.idAfter();
 //        String cursor = request.cursor();
@@ -265,9 +269,9 @@ public class EmployeeService {
         Pageable pageable = PageRequest.of(0, size, sort);
 
         Slice<Employee> employeeSlice = employeeRepository.findByCondition(
-                nameOrEmail, employeeNumber, departmentName, position, hireDateFrom, hireDateTo,
-                status,
-                idAfter, pageable
+            nameOrEmail, employeeNumber, departmentName, position, hireDateFrom, hireDateTo,
+            status,
+            idAfter, pageable
         );
 
         return employeeMapper.toDtoSlice(employeeSlice);
@@ -275,42 +279,44 @@ public class EmployeeService {
     }
 
     public Long countByCondition(EmploymentStatus status, LocalDate fromDate,
-            LocalDate toDate) {
+        LocalDate toDate) {
         return employeeRepository.countByCondition(status, fromDate, toDate);
     }
 
     public List<EmployeeTrendDto> getTrend(
-            LocalDate from,
-            LocalDate to,
-            String unit
+        LocalDate from,
+        LocalDate to,
+        String unit
     ) {
         String finalUnit = Optional.ofNullable(unit).orElse("month").toLowerCase();
         ChronoUnit chronoUnit = getChronoUnit(finalUnit);
 
-        LocalDate finalFrom = Optional.ofNullable(from).orElse(LocalDate.now().minus(12, chronoUnit));
+        LocalDate finalFrom = Optional.ofNullable(from)
+            .orElse(LocalDate.now().minus(12, chronoUnit));
         LocalDate finalTo = Optional.ofNullable(to).orElse(LocalDate.now());
 
         // 1. 기간 시작 전 총 직원 수 조회
         Long totalCountAtStart = employeeQueryRepository.getEmployeeCountBefore(finalFrom);
 
-
         // 1. 입사자 수 조회 및 맵으로 변환
-        List<Tuple> hiredResult = employeeQueryRepository.getHiredTrend(finalFrom, finalTo, finalUnit);
+        List<Tuple> hiredResult = employeeQueryRepository.getHiredTrend(finalFrom, finalTo,
+            finalUnit);
         Map<LocalDate, Long> hiredMap = hiredResult.stream()
-                .collect(Collectors.toMap(
-                        tuple -> tuple.get(0, LocalDate.class),
-                        tuple -> tuple.get(1, Long.class)
-                ));
+            .collect(Collectors.toMap(
+                tuple -> tuple.get(0, LocalDate.class),
+                tuple -> tuple.get(1, Long.class)
+            ));
 //        log.info("로그로그hiredResult: {}",hiredResult.get(0).toString());
 //
 //        log.info("final from to {}, {}", finalFrom, finalTo);
         // 2. 퇴사자 수 조회 및 맵으로 변환
-        List<Tuple> resignedResult = employeeQueryRepository.getResignedTrend(finalFrom, finalTo, finalUnit);
+        List<Tuple> resignedResult = employeeQueryRepository.getResignedTrend(finalFrom, finalTo,
+            finalUnit);
         Map<LocalDate, Long> resignedMap = resignedResult.stream()
-                .collect(Collectors.toMap(
-                        tuple -> tuple.get(0, LocalDateTime.class).toLocalDate(),
-                        tuple -> tuple.get(1, Long.class)
-                ));
+            .collect(Collectors.toMap(
+                tuple -> tuple.get(0, LocalDateTime.class).toLocalDate(),
+                tuple -> tuple.get(1, Long.class)
+            ));
 //         리스트가 비어있지 않을 때만 로그를 출력하도록 조건 추가
         if (!resignedMap.isEmpty()) {
 //            log.info("로그로그hiredResult: {}",hiredResult.get(0).toString());
@@ -321,12 +327,9 @@ public class EmployeeService {
             log.info("로그로그:데이터 없음");
         }
 
-
-
         List<EmployeeTrendDto> trendList = new ArrayList<>();
 //        Long previousTotalCount = 0L;
         Long previousTotalCount = totalCountAtStart; // <-- 초기값을 기간 시작 전 총 직원 수로 설정
-
 
         // 루프의 시작 날짜를 finalFrom의 첫째 날로 설정하고, 1단위씩 증가
         LocalDate currentDate = getTruncatedDate(finalFrom, finalUnit);
@@ -337,17 +340,17 @@ public class EmployeeService {
 
             Long totalCount = previousTotalCount + hiredCount - resignedCount;
             Long change = hiredCount - resignedCount;
-            double changeRate = previousTotalCount > 0 ? (double) change / previousTotalCount * 100.0 : 0.0;
+            double changeRate =
+                previousTotalCount > 0 ? (double) change / previousTotalCount * 100.0 : 0.0;
 
             trendList.add(new EmployeeTrendDto(currentDate, totalCount, change, changeRate));
             previousTotalCount = totalCount;
         }
 
-
-
         return trendList;
 
     }
+
     // 날짜 단위를 기준으로 날짜를 자르는 헬퍼 메서드
     private LocalDate getTruncatedDate(LocalDate date, String unit) {
         switch (unit.toLowerCase()) {
@@ -366,12 +369,18 @@ public class EmployeeService {
 
     private ChronoUnit getChronoUnit(String unit) {
         switch (unit) {
-            case "day": return ChronoUnit.DAYS;
-            case "week": return ChronoUnit.WEEKS;
-            case "month": return ChronoUnit.MONTHS;
-            case "quarter": return ChronoUnit.MONTHS; // 분기는 월 단위로 계산
-            case "year": return ChronoUnit.YEARS;
-            default: return ChronoUnit.MONTHS;
+            case "day":
+                return ChronoUnit.DAYS;
+            case "week":
+                return ChronoUnit.WEEKS;
+            case "month":
+                return ChronoUnit.MONTHS;
+            case "quarter":
+                return ChronoUnit.MONTHS; // 분기는 월 단위로 계산
+            case "year":
+                return ChronoUnit.YEARS;
+            default:
+                return ChronoUnit.MONTHS;
         }
     }
 
@@ -383,20 +392,20 @@ public class EmployeeService {
         Long totalEmployees = employeeQueryRepository.countByStatus(finalStatus);
 
         // 2. 그룹별 직원 수를 튜플로 조회
-        List<Tuple> distributionTuples = employeeQueryRepository.getDistributionTuple(finalGroupBy, finalStatus);
+        List<Tuple> distributionTuples = employeeQueryRepository.getDistributionTuple(finalGroupBy,
+            finalStatus);
 
         // 3. 튜플을 DTO로 변환하며 퍼센티지 계산
         return distributionTuples.stream()
-                .map(tuple -> {
-                    String groupKey = tuple.get(0, String.class);
-                    Long count = tuple.get(1, Long.class);
-                    double percentage = (double) count / totalEmployees * 100.0;
+            .map(tuple -> {
+                String groupKey = tuple.get(0, String.class);
+                Long count = tuple.get(1, Long.class);
+                double percentage = (double) count / totalEmployees * 100.0;
 
-                    return new EmployeeDistributionDto(groupKey, count, percentage);
-                })
-                .collect(Collectors.toList());
+                return new EmployeeDistributionDto(groupKey, count, percentage);
+            })
+            .collect(Collectors.toList());
     }
-
 
 
 }

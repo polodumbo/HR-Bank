@@ -25,7 +25,7 @@ public class LocalFileStorage implements FileStorage {
     private final Path root;
 
     public LocalFileStorage(
-            @Value(".hrbank/storage") Path root
+        @Value(".hrbank/storage") Path root
     ) {
         this.root = root;
     }
@@ -43,7 +43,7 @@ public class LocalFileStorage implements FileStorage {
     }
 
     @Override
-    public Long put(Long fileId, byte[] bytes ) {
+    public Long put(Long fileId, byte[] bytes) {
         Path filePath = resolvePath(fileId);
         if (Files.exists(filePath)) {
             throw new IllegalArgumentException("File already exists!");
@@ -51,9 +51,9 @@ public class LocalFileStorage implements FileStorage {
         Path directoryPath = filePath.getParent();
 
         if (directoryPath != null) {
-            try{
-            Files.createDirectories(directoryPath);}
-            catch (IOException e) {
+            try {
+                Files.createDirectories(directoryPath);
+            } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
@@ -81,26 +81,26 @@ public class LocalFileStorage implements FileStorage {
         }
     }
 
-    private Path resolvePath(Long fileId ) {
-        return root.resolve( fileId.toString());
+    private Path resolvePath(Long fileId) {
+        return root.resolve(fileId.toString());
     }
 
     @Override
-    public ResponseEntity<Resource> download(FileDto metaData ) {
+    public ResponseEntity<Resource> download(FileDto metaData) {
         InputStream inputStream = get(metaData.id());
         Resource resource = new InputStreamResource(inputStream);
 
         return ResponseEntity
-                .status(HttpStatus.OK)
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + metaData.fileName() + "\"")
-                .header(HttpHeaders.CONTENT_TYPE, metaData.contentType())
-                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(metaData.size()))
-                .body(resource);
+            .status(HttpStatus.OK)
+            .header(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + metaData.fileName() + "\"")
+            .header(HttpHeaders.CONTENT_TYPE, metaData.contentType())
+            .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(metaData.size()))
+            .body(resource);
     }
 
     @Override
-    public void delete(Long fileId ) {
+    public void delete(Long fileId) {
         Path filePath = resolvePath(fileId);
         if (Files.notExists(filePath)) {
             throw new NoSuchElementException("File" + fileId + "not found");

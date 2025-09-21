@@ -7,16 +7,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class DiffMapper {
 
-  public DiffDto toDto(ChangeLogDiff changeLogDiff) {
-    if (changeLogDiff == null) {
-      return null;
-    }
+    public DiffDto toDto(ChangeLogDiff changeLogDiff) {
+        if (changeLogDiff == null) {
+            return null;
+        }
 
-    return new DiffDto(
-        changeLogDiff.getPropertyName(),
-        changeLogDiff.getBeforeValue(),
-        changeLogDiff.getAfterValue()
-    );
-  }
+        return new DiffDto(
+            changeLogDiff.getPropertyName(),
+            changeLogDiff.getBeforeValue(),
+            changeLogDiff.getAfterValue()
+        );
+    }
 }
 

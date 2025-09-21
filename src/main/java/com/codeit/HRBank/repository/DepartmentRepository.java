@@ -10,18 +10,18 @@ import org.springframework.data.repository.query.Param;
 
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
-  boolean existsByName(String name);
+    boolean existsByName(String name);
 
-  Optional<Department> findByName(String name);
+    Optional<Department> findByName(String name);
 
-  @Query("""
-          SELECT d FROM Department d
-          WHERE (:idAfter IS NULL OR d.id > :idAfter)
-          AND d.name LIKE '%' || COALESCE(:nameOrDescription, "") || '%' OR d.description LIKE '%' || COALESCE(:nameOrDescription, "") || '%'
-      """)
-  Slice<Department> findByCondition(
-      @Param("idAfter") Long idAfter,
-      @Param("nameOrDescription") String nameOrDescription,
-      Pageable pageable
-  );
+    @Query("""
+            SELECT d FROM Department d
+            WHERE (:idAfter IS NULL OR d.id > :idAfter)
+            AND d.name LIKE '%' || COALESCE(:nameOrDescription, "") || '%' OR d.description LIKE '%' || COALESCE(:nameOrDescription, "") || '%'
+        """)
+    Slice<Department> findByCondition(
+        @Param("idAfter") Long idAfter,
+        @Param("nameOrDescription") String nameOrDescription,
+        Pageable pageable
+    );
 }

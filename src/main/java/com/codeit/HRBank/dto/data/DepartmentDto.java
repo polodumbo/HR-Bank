@@ -1,7 +1,6 @@
 package com.codeit.HRBank.dto.data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public record DepartmentDto(
     Long id,

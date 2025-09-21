@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class QuerydslConfig {
+
     //QueryDSL 설정
     @Bean
     public JPAQueryFactory jpaQueryFactory(EntityManager em) {
